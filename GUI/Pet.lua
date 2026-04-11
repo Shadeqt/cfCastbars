@@ -13,12 +13,8 @@ function cfCastbars.SetupPetGUI()
 	title:SetText("cfCastbars")
 
 	-- Test mode
-	local test = F.Checkbox(sc, nil, "Test Castbars", function(checked)
-		if checked then
-			cfCastbars.StartTest()
-		else
-			cfCastbars.StopTest()
-		end
+	local test = F.Checkbox(sc, nil, "Test", function(checked)
+		cfCastbars.TestPet(checked)
 	end)
 	test:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -10)
 
