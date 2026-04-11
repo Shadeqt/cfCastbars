@@ -4,9 +4,9 @@
 ## Author: Cowfoot
 
 Core.lua
-PetCastbar.lua
-PartyCastbar.lua
-NameplateCastbar.lua
-PlayerCastbar.lua
-TargetCastbar.lua
+Pet.lua
+Party.lua
+Nameplate.lua
+Player.lua
+Target.lua
 Test.lua
