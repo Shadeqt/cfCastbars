@@ -1,5 +1,3 @@
-cfCastbars = {}
-
 function cfCastbars.AddTimer(bar, font)
 	bar.Timer = bar:CreateFontString(nil, "OVERLAY", font or "GameFontHighlightSmall")
 	bar.Timer:SetPoint("LEFT", bar, "RIGHT", 5, 0)

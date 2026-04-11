@@ -1,3 +1,5 @@
-local bar = TargetFrameSpellBar
+function cfCastbars.InitTarget()
+	local bar = TargetFrameSpellBar
 
-cfCastbars.AddTimer(bar, "GameFontHighlight")
+	cfCastbars.AddTimer(bar, "GameFontHighlight")
+end

@@ -2,7 +2,10 @@
 ## Title: cfCastbars
 ## Notes: Castbar POC
 ## Author: Cowfoot
+## SavedVariablesPerCharacter: cfCastbarsDB
 
+Init.lua
+Database.lua
 Core.lua
 Pet.lua
 Party.lua

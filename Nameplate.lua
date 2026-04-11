@@ -17,21 +17,23 @@ local function SetupCastbar(plate, unit)
 	end
 end
 
-local f = CreateFrame("Frame")
-f:RegisterEvent("NAME_PLATE_UNIT_ADDED")
-f:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
-f:RegisterEvent("PLAYER_ENTERING_WORLD")
-f:SetScript("OnEvent", function(_, event, unit)
-	if event == "NAME_PLATE_UNIT_REMOVED" then
-		if bars[unit] then CastingBarFrame_SetUnit(bars[unit], nil) end
-		return
-	end
-	if event == "PLAYER_ENTERING_WORLD" then
-		for _, plate in ipairs(C_NamePlate.GetNamePlates()) do
-			SetupCastbar(plate, plate.namePlateUnitToken)
+function cfCastbars.InitNameplate()
+	local f = CreateFrame("Frame")
+	f:RegisterEvent("NAME_PLATE_UNIT_ADDED")
+	f:RegisterEvent("NAME_PLATE_UNIT_REMOVED")
+	f:RegisterEvent("PLAYER_ENTERING_WORLD")
+	f:SetScript("OnEvent", function(_, event, unit)
+		if event == "NAME_PLATE_UNIT_REMOVED" then
+			if bars[unit] then CastingBarFrame_SetUnit(bars[unit], nil) end
+			return
 		end
-		return
-	end
-	local plate = C_NamePlate.GetNamePlateForUnit(unit)
-	if plate then SetupCastbar(plate, unit) end
-end)
+		if event == "PLAYER_ENTERING_WORLD" then
+			for _, plate in ipairs(C_NamePlate.GetNamePlates()) do
+				SetupCastbar(plate, plate.namePlateUnitToken)
+			end
+			return
+		end
+		local plate = C_NamePlate.GetNamePlateForUnit(unit)
+		if plate then SetupCastbar(plate, unit) end
+	end)
+end
