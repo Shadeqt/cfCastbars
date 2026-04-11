@@ -29,6 +29,7 @@ function cfCastbars.CreateCastbar(parent, unit, width, height)
 	bar.Flash:ClearAllPoints()
 	bar.Flash:SetSize(bw, bh)
 	bar.Flash:SetPoint("CENTER")
+	bar.Flash:Hide()
 
 	bar.Icon:ClearAllPoints()
 	bar.Icon:SetPoint("RIGHT", bar, "LEFT", -5, 0)
@@ -37,9 +38,15 @@ function cfCastbars.CreateCastbar(parent, unit, width, height)
 	bar.Text:ClearAllPoints()
 	bar.Text:SetPoint("CENTER")
 
-	bar.Spark:SetSize(height * 2, height * 2.5)
+	-- 32x32 is the real spark size at the template's default 150x10 (ratio 3.2)
+	bar.Spark:SetSize(height * 3.2, height * 3.2)
 
 	cfCastbars.AddTimer(bar)
+
+	-- Draw above border
+	bar.Icon:SetDrawLayer("OVERLAY", 2)
+	bar.Text:SetDrawLayer("OVERLAY", 2)
+	bar.Timer:SetDrawLayer("OVERLAY", 2)
 
 	bar:HookScript("OnEvent", function(self, event)
 		if event == "UNIT_SPELLCAST_START" or event == "UNIT_SPELLCAST_CHANNEL_START" then

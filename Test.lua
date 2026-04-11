@@ -15,7 +15,6 @@ local function FakeCast(bar, skipUnbind)
 	bar.Text:SetText("Test Cast")
 	bar.Flash:Hide()
 	bar.cbtTestStart = GetTime()
-	local width = bar:GetWidth()
 	if not bar.cbtHooked then
 		bar:HookScript("OnUpdate", function(self)
 			if not self.cbtTestStart then return end
@@ -25,7 +24,7 @@ local function FakeCast(bar, skipUnbind)
 			self:SetStatusBarColor(1, 0.7, 0)
 			self.Flash:Hide()
 			self.Spark:Show()
-			self.Spark:SetPoint("CENTER", self, "LEFT", (elapsed / 3) * width, 0)
+			self.Spark:SetPoint("CENTER", self, "LEFT", (elapsed / 3) * self:GetWidth(), 0)
 			if self.Timer then self.Timer:SetText(format("%.1f", 3 - elapsed)) end
 		end)
 		bar.cbtHooked = true
@@ -53,7 +52,7 @@ listener:SetScript("OnEvent", function(_, _, unit)
 	if cfCastbars.nameplateBars[unit] then FakeCast(cfCastbars.nameplateBars[unit]) end
 end)
 
-local function StopAll()
+function cfCastbars.StopTest()
 	testing = false
 	listener:UnregisterAllEvents()
 	for _, bar in ipairs(testBars) do
@@ -64,6 +63,7 @@ local function StopAll()
 			bar.cbtUnit = nil
 		end
 	end
+	TargetFrameSpellBar.cbtYOffset = nil
 	wipe(testBars)
 	for _, frame in ipairs(forcedFrames) do
 		frame:Hide()
@@ -71,7 +71,7 @@ local function StopAll()
 	wipe(forcedFrames)
 end
 
-local function StartAll()
+function cfCastbars.StartTest()
 	testing = true
 
 	-- Player
@@ -80,11 +80,23 @@ local function StartAll()
 	-- Target + ToT
 	ForceShow(TargetFrame)
 	if TargetFrameToT then ForceShow(TargetFrameToT) end
-	FakeCast(TargetFrameSpellBar, true)
+	local targetBar = TargetFrameSpellBar
+	targetBar.cbtYOffset = -40
+	if not targetBar.cbtOffsetHooked then
+		hooksecurefunc(targetBar, "SetPoint", function(self)
+			if not self.cbtYOffset or self.cfcbHook then return end
+			local p, rel, relp, x, y = self:GetPoint(1)
+			self.cfcbHook = true
+			self:SetPoint(p, rel, relp, x, y + self.cbtYOffset)
+			self.cfcbHook = nil
+		end)
+		targetBar.cbtOffsetHooked = true
+	end
+	FakeCast(targetBar, true)
 
 	-- Pet
 	ForceShow(PetFrame)
-	if not cfCastbars.petBar then cfCastbars.CreatePetCastbar() end
+	cfCastbars.UpdatePet()
 	if cfCastbars.petBar then FakeCast(cfCastbars.petBar) end
 
 	-- Party
@@ -108,10 +120,10 @@ end
 SLASH_CFCBT1 = "/cbt"
 SlashCmdList["CFCBT"] = function()
 	if #testBars > 0 then
-		StopAll()
+		cfCastbars.StopTest()
 		print("cfCastbars test: OFF")
 	else
-		StartAll()
+		cfCastbars.StartTest()
 		print("cfCastbars test: ON")
 	end
 end

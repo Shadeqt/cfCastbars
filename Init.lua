@@ -24,4 +24,12 @@ EventUtil.ContinueOnAddOnLoaded("cfCastbars", function()
 	cfCastbars.InitNameplate()
 	cfCastbars.InitPlayer()
 	cfCastbars.InitTarget()
+
+	-- GUI
+	cfCastbars.SetupPetGUI()
+
+	SLASH_CFCB1 = "/cfcb"
+	SlashCmdList["CFCB"] = function()
+		Settings.OpenToCategory(cfCastbars.category:GetID())
+	end
 end)

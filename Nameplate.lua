@@ -4,7 +4,7 @@ local bars = cfCastbars.nameplateBars
 local function CreateNameplateCastbar(unitFrame, unit)
 	local hp = unitFrame.healthBar
 	local bar = cfCastbars.CreateCastbar(unitFrame, unit, hp:GetWidth(), hp:GetHeight())
-	bar:SetPoint("TOP", hp, "BOTTOM", 17, -5)
+	bar:SetPoint("TOP", hp, "BOTTOM", 18, -5)
 	bars[unit] = bar
 	return bar
 end
