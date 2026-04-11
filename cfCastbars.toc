@@ -1,0 +1,12 @@
+## Interface: 11508
+## Title: cfCastbars
+## Notes: Castbar POC
+## Author: Cowfoot
+
+Core.lua
+PetCastbar.lua
+PartyCastbar.lua
+NameplateCastbar.lua
+PlayerCastbar.lua
+TargetCastbar.lua
+Test.lua
