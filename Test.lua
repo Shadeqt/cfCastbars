@@ -10,8 +10,6 @@ local function FakeCast(bar, skipUnbind)
 
 	bar:SetMinMaxValues(0, 3)
 	bar:SetValue(0)
-	bar.startCastColor = CreateColor(1, 0.7, 0)
-	bar:SetStatusBarColor(1, 0.7, 0)
 	bar.Icon:SetTexture("Interface\\Icons\\Spell_Nature_Lightning")
 	bar.Icon:Show()
 	bar.Text:SetText("Test Cast")
@@ -37,15 +35,6 @@ local function FakeCast(bar, skipUnbind)
 	table.insert(testBars, bar)
 end
 
-local function StopFake(bar)
-	bar.cbtTestStart = nil
-	bar:Hide()
-	if bar.cbtUnit then
-		CastingBarFrame_SetUnit(bar, bar.cbtUnit)
-		bar.cbtUnit = nil
-	end
-end
-
 local function ForceShow(frame)
 	if frame and not frame:IsShown() then
 		if not frame.cbtHooked then
@@ -68,7 +57,12 @@ local function StopAll()
 	testing = false
 	listener:UnregisterAllEvents()
 	for _, bar in ipairs(testBars) do
-		StopFake(bar)
+		bar.cbtTestStart = nil
+		bar:Hide()
+		if bar.cbtUnit then
+			CastingBarFrame_SetUnit(bar, bar.cbtUnit)
+			bar.cbtUnit = nil
+		end
 	end
 	wipe(testBars)
 	for _, frame in ipairs(forcedFrames) do
