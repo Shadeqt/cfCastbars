@@ -94,16 +94,14 @@ local function StartAll()
 	if cfCastbars.petBar then FakeCast(cfCastbars.petBar) end
 
 	-- Party
-	if GetCVarBool("useCompactPartyFrames") and IsInGroup() then
-		for _, bar in pairs(cfCastbars.partyBars) do
-			FakeCast(bar)
-		end
-	else
+	if not IsInGroup() or not GetCVarBool("useCompactPartyFrames") then
 		for i = 1, MAX_PARTY_MEMBERS do
 			ForceShow(_G["PartyMemberFrame" .. i])
 			if not cfCastbars.partyBars[i] then cfCastbars.CreatePartyCastbar(i) end
-			if cfCastbars.partyBars[i] then FakeCast(cfCastbars.partyBars[i]) end
 		end
+	end
+	for _, bar in pairs(cfCastbars.partyBars) do
+		FakeCast(bar)
 	end
 
 	-- Nameplates

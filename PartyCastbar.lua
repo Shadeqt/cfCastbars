@@ -19,7 +19,9 @@ end
 local f = CreateFrame("Frame")
 f:RegisterEvent("PLAYER_ENTERING_WORLD")
 f:RegisterEvent("GROUP_ROSTER_UPDATE")
-f:SetScript("OnEvent", function()
+f:RegisterEvent("CVAR_UPDATE")
+f:SetScript("OnEvent", function(_, event, cvar)
+	if event == "CVAR_UPDATE" and cvar ~= "useCompactPartyFrames" then return end
 	if GetCVarBool("useCompactPartyFrames") then
 		for i = 1, MAX_RAID_MEMBERS do
 			local frame = _G["CompactRaidFrame" .. i]
