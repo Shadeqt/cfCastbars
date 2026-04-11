@@ -8,8 +8,9 @@ function F.ScrollPanel(panel)
 	sf:SetPoint("TOPLEFT", 0, 0)
 	sf:SetPoint("BOTTOMRIGHT", -26, 0)
 	local sc = CreateFrame("Frame", nil, sf)
-	sc:SetSize(600, 1)
+	sc:SetSize(1, 1)
 	sf:SetScrollChild(sc)
+	sc:SetScript("OnSizeChanged", function(self) self:SetWidth(sf:GetWidth()) end)
 	panel:HookScript("OnShow", function()
 		local top = sc:GetTop()
 		if not top then return end
@@ -28,7 +29,7 @@ function F.HSeparator(parent)
 	sep:SetHeight(1)
 	sep:SetColorTexture(0.4, 0.4, 0.4, 0.4)
 	sep:SetPoint("LEFT", parent, "LEFT", 0, 0)
-	sep:SetPoint("RIGHT", parent, "RIGHT", -16, 0)
+	sep:SetPoint("RIGHT", parent, "RIGHT", 0, 0)
 	return sep
 end
 

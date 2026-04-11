@@ -12,6 +12,23 @@ function cfCastbars.AddTimer(bar, font)
 	end)
 end
 
+function cfCastbars.HookPosition(bar, keyX, keyY)
+	local p, rel, relp, x, y = bar:GetPoint(1)
+	if p then bar.cfcbBasePos = { p, rel, relp, x, y } end
+
+	hooksecurefunc(bar, "SetPoint", function(self)
+		if self.cfcbHook then return end
+		local p2, rel2, relp2, x2, y2 = self:GetPoint(1)
+		self.cfcbBasePos = { p2, rel2, relp2, x2, y2 }
+		local ox = cfCastbarsDB[keyX]
+		local oy = cfCastbarsDB[keyY] + (self.cbtYOffset or 0)
+		if ox == 0 and oy == 0 then return end
+		self.cfcbHook = true
+		self:SetPoint(p2, rel2, relp2, x2 + ox, y2 + oy)
+		self.cfcbHook = nil
+	end)
+end
+
 function cfCastbars.CreateCastbar(parent, unit, width, height)
 	local bar = CreateFrame("StatusBar", nil, parent, "SmallCastingBarFrameTemplate")
 	bar:Hide()

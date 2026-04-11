@@ -24,6 +24,7 @@ function cfCastbars.UpdatePet()
 	-- Icon
 	if db[K.PetIcon] then
 		bar.Icon:Show()
+		bar.Icon:SetSize(h * 1.5, h * 1.5)
 		bar.Icon:SetScale(db[K.PetIconScale])
 		bar.Icon:ClearAllPoints()
 		bar.Icon:SetPoint("RIGHT", bar, "LEFT", -5 + db[K.PetIconX], db[K.PetIconY])

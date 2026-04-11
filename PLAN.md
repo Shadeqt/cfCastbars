@@ -4,7 +4,7 @@
 - [x] Pet feature + GUI
 - [ ] Party feature + GUI
 - [ ] Nameplate feature + GUI
-- [ ] Player feature + GUI
+- [x] Player feature + GUI
 - [ ] Target feature + GUI
 
 ## Prerequisites
@@ -13,13 +13,11 @@
 
 ## Build order (GUI layout: Player|Target on top, Party|Pet below)
 
-### 1. Player
-- [ ] Add DB keys to UpdateParty (read all Party* keys)
-- [ ] Apply scale, x, y, width, height to bar
-- [ ] Apply icon, timer, text, border toggles + offsets
-- [ ] Update spark/border on size change
-- [ ] Handle both classic and compact frames
-- [ ] GUI: checkboxes + sliders, test checkbox, BindChildren, reset
+### 1. Player (done)
+- [x] UpdatePlayer with all DB keys
+- [x] SetPoint hook for Blizzard repositioning
+- [x] Spark/border/icon resize on height change
+- [x] GUI with sliders, checkboxes, BindChildren, reset
 
 ### 2. Target
 - [ ] Add DB keys to UpdateTarget (modifies TargetFrameSpellBar)

@@ -38,12 +38,12 @@ local function ForceShow(frame)
 	if frame and not frame:IsShown() then
 		if not frame.cbtForceHooked then
 			hooksecurefunc(frame, "Hide", function(self)
-				if self.cbtForceShow then self:Show() end
+				if self.cbtForceShow and not InCombatLockdown() then self:Show() end
 			end)
 			frame.cbtForceHooked = true
 		end
 		frame.cbtForceShow = true
-		frame:Show()
+		if not InCombatLockdown() then frame:Show() end
 		table.insert(forcedFrames, frame)
 	end
 end
@@ -86,20 +86,12 @@ end
 function cfCastbars.TestTarget(on)
 	if on then
 		testing.Target = true
-		ForceShow(TargetFrame)
-		if TargetFrameToT then ForceShow(TargetFrameToT) end
+		if not InCombatLockdown() then
+			ForceShow(TargetFrame)
+			if TargetFrameToT then ForceShow(TargetFrameToT) end
+		end
 		local bar = TargetFrameSpellBar
 		bar.cbtYOffset = -40
-		if not bar.cbtOffsetHooked then
-			hooksecurefunc(bar, "SetPoint", function(self)
-				if not self.cbtYOffset or self.cfcbHook then return end
-				local p, rel, relp, x, y = self:GetPoint(1)
-				self.cfcbHook = true
-				self:SetPoint(p, rel, relp, x, y + self.cbtYOffset)
-				self.cfcbHook = nil
-			end)
-			bar.cbtOffsetHooked = true
-		end
 		FakeCast("Target", bar, true)
 	else
 		TargetFrameSpellBar.cbtYOffset = nil
@@ -176,7 +168,7 @@ function cfCastbars.StopTest()
 	cfCastbars.TestNameplate(false)
 	for _, frame in ipairs(forcedFrames) do
 		frame.cbtForceShow = nil
-		frame:Hide()
+		if not InCombatLockdown() then frame:Hide() end
 	end
 	wipe(forcedFrames)
 end
