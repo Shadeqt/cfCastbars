@@ -70,6 +70,7 @@ function F.BindChildren(checkbox, dependents)
 		end
 	end
 	checkbox:HookScript("OnClick", Update)
+	checkbox.UpdateChildren = Update
 	Update()
 end
 
@@ -85,8 +86,9 @@ function F.ResetPrefix(prefix, callback)
 	for key, value in pairs(cfCastbars.DEFAULTS) do
 		if key:sub(1, #prefix) == prefix then
 			cfCastbarsDB[key] = value
-			if widgets[key] and widgets[key].Refresh then
-				widgets[key]:Refresh()
+			if widgets[key] then
+				if widgets[key].Refresh then widgets[key]:Refresh() end
+				if widgets[key].UpdateChildren then widgets[key]:UpdateChildren() end
 			end
 		end
 	end

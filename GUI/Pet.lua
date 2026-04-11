@@ -85,10 +85,10 @@ function cfCastbars.SetupPetGUI()
 	local plReset = F.Button(sc, "Reset", function() F.ResetPrefix("Player", pl) end)
 	plReset:SetPoint("TOPLEFT", plTextY, "BOTTOMLEFT", 0, -15)
 
-	F.BindChildren(plEnabled, {plIcon, plTimer, plText, plBorder, plhCb, plScale, plX, plY, plW, plH, plhIcon, plIconScale, plIconX, plIconY, plhTimer, plTimerScale, plTimerX, plTimerY, plhText, plTextScale, plTextX, plTextY, plReset})
 	F.BindChildren(plIcon, {plhIcon, plIconScale, plIconX, plIconY})
 	F.BindChildren(plTimer, {plhTimer, plTimerScale, plTimerX, plTimerY})
 	F.BindChildren(plText, {plhText, plTextScale, plTextX, plTextY})
+	F.BindChildren(plEnabled, {plIcon, plTimer, plText, plBorder, plhCb, plScale, plX, plY, plW, plH, plhIcon, plIconScale, plIconX, plIconY, plhTimer, plTimerScale, plTimerX, plTimerY, plhText, plTextScale, plTextX, plTextY})
 
 	-----------------------------------------------------------------------
 	-- Column 2: Target
@@ -152,10 +152,10 @@ function cfCastbars.SetupPetGUI()
 	local tgReset = F.Button(sc, "Reset", function() F.ResetPrefix("Target", tg) end)
 	tgReset:SetPoint("TOPLEFT", tgTextY, "BOTTOMLEFT", 0, -15)
 
-	F.BindChildren(tgEnabled, {tgIcon, tgTimer, tgText, tgBorder, tghCb, tgScale, tgX, tgY, tgW, tgH, tghIcon, tgIconScale, tgIconX, tgIconY, tghTimer, tgTimerScale, tgTimerX, tgTimerY, tghText, tgTextScale, tgTextX, tgTextY, tgReset})
 	F.BindChildren(tgIcon, {tghIcon, tgIconScale, tgIconX, tgIconY})
 	F.BindChildren(tgTimer, {tghTimer, tgTimerScale, tgTimerX, tgTimerY})
 	F.BindChildren(tgText, {tghText, tgTextScale, tgTextX, tgTextY})
+	F.BindChildren(tgEnabled, {tgIcon, tgTimer, tgText, tgBorder, tghCb, tgScale, tgX, tgY, tgW, tgH, tghIcon, tgIconScale, tgIconX, tgIconY, tghTimer, tgTimerScale, tgTimerX, tgTimerY, tghText, tgTextScale, tgTextX, tgTextY})
 
 	-----------------------------------------------------------------------
 	-- Column 3: Pet
@@ -219,21 +219,98 @@ function cfCastbars.SetupPetGUI()
 	local ptReset = F.Button(sc, "Reset", function() F.ResetPrefix("Pet", pt) end)
 	ptReset:SetPoint("TOPLEFT", ptTextY, "BOTTOMLEFT", 0, -15)
 
-	F.BindChildren(ptEnabled, {ptIcon, ptTimer, ptText, ptBorder, pthCb, ptScale, ptX, ptY, ptW, ptH, pthIcon, ptIconScale, ptIconX, ptIconY, pthTimer, ptTimerScale, ptTimerX, ptTimerY, pthText, ptTextScale, ptTextX, ptTextY, ptReset})
 	F.BindChildren(ptIcon, {pthIcon, ptIconScale, ptIconX, ptIconY})
 	F.BindChildren(ptTimer, {pthTimer, ptTimerScale, ptTimerX, ptTimerY})
 	F.BindChildren(ptText, {pthText, ptTextScale, ptTextX, ptTextY})
+	F.BindChildren(ptEnabled, {ptIcon, ptTimer, ptText, ptBorder, pthCb, ptScale, ptX, ptY, ptW, ptH, pthIcon, ptIconScale, ptIconX, ptIconY, pthTimer, ptTimerScale, ptTimerX, ptTimerY, pthText, ptTextScale, ptTextX, ptTextY})
 
 	-----------------------------------------------------------------------
-	-- Separators
+	-- Row 1 separators
 	-----------------------------------------------------------------------
+	-- Find longest column bottom for row separator
+	local row1Bottom = plReset
+	for _, r in ipairs({tgReset, ptReset}) do
+		if r:GetBottom() and r:GetBottom() < (row1Bottom:GetBottom() or 0) then row1Bottom = r end
+	end
+
 	local vsep1 = F.VSeparator(sc)
 	vsep1:SetPoint("TOPLEFT", ROW_TOP, "BOTTOMLEFT", COL_W, 0)
-	vsep1:SetPoint("BOTTOM", sc, "BOTTOM", 0, 0)
+	vsep1:SetPoint("TOP", ROW_TOP, "BOTTOM", 0, 0)
+	vsep1:SetPoint("BOTTOM", row1Bottom, "BOTTOM", 0, -10)
 
 	local vsep2 = F.VSeparator(sc)
 	vsep2:SetPoint("TOPLEFT", ROW_TOP, "BOTTOMLEFT", COL_W * 2, 0)
-	vsep2:SetPoint("BOTTOM", sc, "BOTTOM", 0, 0)
+	vsep2:SetPoint("BOTTOM", row1Bottom, "BOTTOM", 0, -10)
+
+	local hsep2 = F.HSeparator(sc)
+	hsep2:SetPoint("TOP", row1Bottom, "BOTTOM", 0, -10)
+
+	-----------------------------------------------------------------------
+	-- Row 2, Column 1: Party
+	-----------------------------------------------------------------------
+	local pa = cfCastbars.UpdateParty
+	local paHeader = F.Text(sc, "Party", "GameFontNormalLarge")
+	paHeader:SetPoint("TOPLEFT", hsep2, "BOTTOMLEFT", COL1, -10)
+	local paTest = F.Checkbox(sc, nil, "Test", function(c) cfCastbars.TestParty(c) end)
+	paTest:SetPoint("TOPLEFT", paHeader, "BOTTOMLEFT", 0, -5)
+	local paEnabled = F.Checkbox(sc, K.Party, "Castbar", pa)
+	paEnabled:SetPoint("TOPLEFT", paTest, "BOTTOMLEFT", 0, -5)
+	local paIcon = F.Checkbox(sc, K.PartyIcon, "Icon", pa)
+	paIcon:SetPoint("TOPLEFT", paEnabled, "BOTTOMLEFT", 0, -5)
+	local paTimer = F.Checkbox(sc, K.PartyTimer, "Timer", pa)
+	paTimer:SetPoint("LEFT", paIcon, "RIGHT", 60, 0)
+	local paText = F.Checkbox(sc, K.PartyText, "Text", pa)
+	paText:SetPoint("TOPLEFT", paIcon, "BOTTOMLEFT", 0, -5)
+	local paBorder = F.Checkbox(sc, K.PartyBorder, "Border", pa)
+	paBorder:SetPoint("LEFT", paText, "RIGHT", 60, 0)
+
+	local pahCb = F.Text(sc, "Castbar", "GameFontNormal")
+	pahCb:SetPoint("TOPLEFT", paText, "BOTTOMLEFT", 0, -15)
+	local paScale = F.Slider(sc, K.PartyScale, "Castbar Scale", 0.1, 1.9, 0.05, pa)
+	paScale:SetPoint("TOPLEFT", pahCb, "BOTTOMLEFT", 0, -10)
+	local paX = F.Slider(sc, K.PartyX, "Castbar X", -1000, 1000, 1, pa)
+	paX:SetPoint("TOPLEFT", paScale, "BOTTOMLEFT", 0, -15)
+	local paY = F.Slider(sc, K.PartyY, "Castbar Y", -1000, 1000, 1, pa)
+	paY:SetPoint("TOPLEFT", paX, "BOTTOMLEFT", 0, -15)
+	local paW = F.Slider(sc, K.PartyWidth, "Castbar Width", -50, 500, 1, pa)
+	paW:SetPoint("TOPLEFT", paY, "BOTTOMLEFT", 0, -15)
+	local paH = F.Slider(sc, K.PartyHeight, "Castbar Height", -5, 50, 1, pa)
+	paH:SetPoint("TOPLEFT", paW, "BOTTOMLEFT", 0, -15)
+
+	local pahIcon = F.Text(sc, "Icon", "GameFontNormal")
+	pahIcon:SetPoint("TOPLEFT", paH, "BOTTOMLEFT", 0, -15)
+	local paIconScale = F.Slider(sc, K.PartyIconScale, "Icon Scale", 0.1, 1.9, 0.05, pa)
+	paIconScale:SetPoint("TOPLEFT", pahIcon, "BOTTOMLEFT", 0, -10)
+	local paIconX = F.Slider(sc, K.PartyIconX, "Icon X", -1000, 1000, 1, pa)
+	paIconX:SetPoint("TOPLEFT", paIconScale, "BOTTOMLEFT", 0, -15)
+	local paIconY = F.Slider(sc, K.PartyIconY, "Icon Y", -1000, 1000, 1, pa)
+	paIconY:SetPoint("TOPLEFT", paIconX, "BOTTOMLEFT", 0, -15)
+
+	local pahTimer = F.Text(sc, "Timer", "GameFontNormal")
+	pahTimer:SetPoint("TOPLEFT", paIconY, "BOTTOMLEFT", 0, -15)
+	local paTimerScale = F.Slider(sc, K.PartyTimerScale, "Timer Scale", 0.1, 1.9, 0.05, pa)
+	paTimerScale:SetPoint("TOPLEFT", pahTimer, "BOTTOMLEFT", 0, -10)
+	local paTimerX = F.Slider(sc, K.PartyTimerX, "Timer X", -1000, 1000, 1, pa)
+	paTimerX:SetPoint("TOPLEFT", paTimerScale, "BOTTOMLEFT", 0, -15)
+	local paTimerY = F.Slider(sc, K.PartyTimerY, "Timer Y", -1000, 1000, 1, pa)
+	paTimerY:SetPoint("TOPLEFT", paTimerX, "BOTTOMLEFT", 0, -15)
+
+	local pahText = F.Text(sc, "Text", "GameFontNormal")
+	pahText:SetPoint("TOPLEFT", paTimerY, "BOTTOMLEFT", 0, -15)
+	local paTextScale = F.Slider(sc, K.PartyTextScale, "Text Scale", 0.1, 1.9, 0.05, pa)
+	paTextScale:SetPoint("TOPLEFT", pahText, "BOTTOMLEFT", 0, -10)
+	local paTextX = F.Slider(sc, K.PartyTextX, "Text X", -1000, 1000, 1, pa)
+	paTextX:SetPoint("TOPLEFT", paTextScale, "BOTTOMLEFT", 0, -15)
+	local paTextY = F.Slider(sc, K.PartyTextY, "Text Y", -1000, 1000, 1, pa)
+	paTextY:SetPoint("TOPLEFT", paTextX, "BOTTOMLEFT", 0, -15)
+
+	local paReset = F.Button(sc, "Reset", function() F.ResetPrefix("Party", pa) end)
+	paReset:SetPoint("TOPLEFT", paTextY, "BOTTOMLEFT", 0, -15)
+
+	F.BindChildren(paIcon, {pahIcon, paIconScale, paIconX, paIconY})
+	F.BindChildren(paTimer, {pahTimer, paTimerScale, paTimerX, paTimerY})
+	F.BindChildren(paText, {pahText, paTextScale, paTextX, paTextY})
+	F.BindChildren(paEnabled, {paIcon, paTimer, paText, paBorder, pahCb, paScale, paX, paY, paW, paH, pahIcon, paIconScale, paIconX, paIconY, pahTimer, paTimerScale, paTimerX, paTimerY, pahText, paTextScale, paTextX, paTextY})
 
 	-----------------------------------------------------------------------
 	-- Register
