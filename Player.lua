@@ -29,7 +29,7 @@ function cfCastbars.UpdatePlayer()
 	-- Enabled
 	if not cfCastbarsDB[K.Player] then
 		bar:Hide()
-	elseif bar.cbtTestStart then
+	elseif cfCastbars.testing.Player then
 		bar:Show()
 	end
 end

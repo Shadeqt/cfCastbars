@@ -155,7 +155,7 @@ function cfCastbars.HookPosition(bar, keyX, keyY)
 		local p2, rel2, relp2, x2, y2 = self:GetPoint(1)
 		self.cfcbBasePos = { p2, rel2, relp2, x2, y2 }
 		local ox = cfCastbarsDB[keyX]
-		local oy = cfCastbarsDB[keyY] + (self.cbtYOffset or 0)
+		local oy = cfCastbarsDB[keyY] + (self.cfcbYOffset or 0)
 		if ox == 0 and oy == 0 then return end
 		self.cfcbHook = true
 		self:SetPoint(p2, rel2, relp2, x2 + ox, y2 + oy)

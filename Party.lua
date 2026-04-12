@@ -44,7 +44,7 @@ function cfCastbars.UpdateParty()
 		if not db[K.Party] then
 			CastingBarFrame_SetUnit(bar, nil)
 			bar:Hide()
-		elseif bar.cbtTestStart then
+		elseif cfCastbars.testing.Party then
 			bar:Show()
 		end
 	end

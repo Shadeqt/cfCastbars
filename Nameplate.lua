@@ -32,7 +32,7 @@ function cfCastbars.UpdateNameplate()
 		if not db[K.Nameplate] then
 			CastingBarFrame_SetUnit(bar, nil)
 			bar:Hide()
-		elseif bar.cbtTestStart then
+		elseif cfCastbars.testing.Nameplate then
 			bar:Show()
 		end
 	end

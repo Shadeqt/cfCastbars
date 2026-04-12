@@ -20,7 +20,7 @@ function cfCastbars.ApplyTargetSettings()
 	local bp = bar.cfcbBasePos
 	if bp and bp[4] then
 		bar.cfcbHook = true
-		bar:SetPoint(bp[1], bp[2], bp[3], bp[4] + db[K.TargetX], bp[5] + db[K.TargetY] + (bar.cbtYOffset or 0))
+		bar:SetPoint(bp[1], bp[2], bp[3], bp[4] + db[K.TargetX], bp[5] + db[K.TargetY] + (bar.cfcbYOffset or 0))
 		bar.cfcbHook = nil
 	end
 end
@@ -31,7 +31,7 @@ function cfCastbars.UpdateTarget()
 	-- Enabled
 	if not cfCastbarsDB[K.Target] then
 		bar:Hide()
-	elseif bar.cbtTestStart then
+	elseif cfCastbars.testing.Target then
 		bar:Show()
 	end
 end

@@ -31,7 +31,7 @@ function cfCastbars.UpdatePet()
 		bar:Hide()
 	elseif UnitExists("pet") then
 		CastingBarFrame_SetUnit(bar, "pet")
-	elseif bar.cbtTestStart then
+	elseif cfCastbars.testing.Pet then
 		bar:Show()
 	end
 end

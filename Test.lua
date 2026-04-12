@@ -1,13 +1,16 @@
 -- Per-domain test toggles + /cbt for all
 
-local testing = {}
+cfCastbars.testing = {}
+local testing = cfCastbars.testing
 local testBars = { Player = {}, Target = {}, Party = {}, Pet = {}, Nameplate = {} }
 local forcedFrames = {}
-local K = cfCastbars.K
-local prefixes = {"Player", "Target", "Pet", "Party", "Nameplate"}
+
+local savedUnits = {}
+local hookedBars = {}
+local forcedSet = {}
 
 local function FakeCast(domain, bar, skipUnbind)
-	bar.cbtUnit = bar.cbtUnit or bar.unit
+	savedUnits[bar] = savedUnits[bar] or bar.unit
 	if not skipUnbind then CastingBarFrame_SetUnit(bar, nil) end
 
 	bar:SetMinMaxValues(0, 3)
@@ -15,18 +18,18 @@ local function FakeCast(domain, bar, skipUnbind)
 	bar.Icon:SetTexture("Interface\\Icons\\Spell_Nature_Lightning")
 	bar.Icon:Show()
 	bar.Text:SetText("Test Cast")
-	bar.cbtTestStart = GetTime()
-	if not bar.cbtHooked then
+	local startTime = GetTime()
+	if not hookedBars[bar] then
 		bar:HookScript("OnUpdate", function(self)
-			if not self.cbtTestStart then return end
+			if not testing[domain] then return end
 			self:SetAlpha(1)
-			local elapsed = (GetTime() - self.cbtTestStart) % 3
+			local elapsed = (GetTime() - startTime) % 3
 			self:SetValue(elapsed)
 			self:SetStatusBarColor(1, 0.7, 0)
 			self.Spark:SetPoint("CENTER", self, "LEFT", (elapsed / 3) * self:GetWidth(), 0)
 			if self.Timer then self.Timer:SetText(format("%.1f", 3 - elapsed)) end
 		end)
-		bar.cbtHooked = true
+		hookedBars[bar] = true
 	end
 
 	bar:Show()
@@ -35,13 +38,12 @@ end
 
 local function ForceShow(frame)
 	if frame and not frame:IsShown() then
-		if not frame.cbtForceHooked then
+		if not forcedSet[frame] then
 			hooksecurefunc(frame, "Hide", function(self)
-				if self.cbtForceShow and not InCombatLockdown() then self:Show() end
+				if forcedSet[self] and not InCombatLockdown() then self:Show() end
 			end)
-			frame.cbtForceHooked = true
+			forcedSet[frame] = true
 		end
-		frame.cbtForceShow = true
 		if not InCombatLockdown() then frame:Show() end
 		table.insert(forcedFrames, frame)
 	end
@@ -50,11 +52,10 @@ end
 local function StopDomain(domain)
 	testing[domain] = nil
 	for _, bar in ipairs(testBars[domain]) do
-		bar.cbtTestStart = nil
 		bar:Hide()
-		if bar.cbtUnit then
-			CastingBarFrame_SetUnit(bar, bar.cbtUnit)
-			bar.cbtUnit = nil
+		if savedUnits[bar] then
+			CastingBarFrame_SetUnit(bar, savedUnits[bar])
+			savedUnits[bar] = nil
 		end
 	end
 	wipe(testBars[domain])
@@ -90,12 +91,11 @@ function cfCastbars.TestTarget(on)
 			ForceShow(TargetFrame)
 			if TargetFrameToT then ForceShow(TargetFrameToT) end
 		end
-		local bar = TargetFrameSpellBar
-		bar.cbtYOffset = -40
-		FakeCast("Target", bar, true)
+		TargetFrameSpellBar.cfcbYOffset = -40
+		FakeCast("Target", TargetFrameSpellBar, true)
 		cfCastbars.ApplyTargetSettings()
 	else
-		TargetFrameSpellBar.cbtYOffset = nil
+		TargetFrameSpellBar.cfcbYOffset = nil
 		StopDomain("Target")
 	end
 end
@@ -182,7 +182,7 @@ function cfCastbars.StopTest()
 	cfCastbars.TestPet(false)
 	cfCastbars.TestNameplate(false)
 	for _, frame in ipairs(forcedFrames) do
-		frame.cbtForceShow = nil
+		forcedSet[frame] = nil
 		if not InCombatLockdown() then frame:Hide() end
 	end
 	wipe(forcedFrames)
@@ -203,26 +203,3 @@ SlashCmdList["CFCBT"] = function()
 	end
 end
 
-SLASH_CFFLASH1 = "/cfflash"
-SlashCmdList["CFFLASH"] = function()
-	local on = not cfCastbarsDB[K.PlayerFlash]
-	for _, p in ipairs(prefixes) do cfCastbarsDB[K[p .. "Flash"]] = on end
-	cfCastbars.UpdatePlayer()
-	cfCastbars.UpdateTarget()
-	cfCastbars.UpdatePet()
-	cfCastbars.UpdateParty()
-	cfCastbars.UpdateNameplate()
-	print("cfCastbars flash: " .. (on and "ON" or "OFF"))
-end
-
-SLASH_CFSHIELD1 = "/cfshield"
-SlashCmdList["CFSHIELD"] = function()
-	local on = not cfCastbarsDB[K.PlayerBorderShield]
-	for _, p in ipairs(prefixes) do cfCastbarsDB[K[p .. "BorderShield"]] = on end
-	cfCastbars.UpdatePlayer()
-	cfCastbars.UpdateTarget()
-	cfCastbars.UpdatePet()
-	cfCastbars.UpdateParty()
-	cfCastbars.UpdateNameplate()
-	print("cfCastbars shield: " .. (on and "ON" or "OFF"))
-end

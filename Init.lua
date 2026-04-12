@@ -33,6 +33,4 @@ EventUtil.ContinueOnAddOnLoaded("cfCastbars", function()
 		Settings.OpenToCategory(cfCastbars.category:GetID())
 	end
 
-	-- Auto-start test on login (REMOVE WHEN DONE)
-	C_Timer.After(1, cfCastbars.StartTest)
 end)
