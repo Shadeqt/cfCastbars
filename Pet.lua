@@ -20,14 +20,17 @@ function cfCastbars.UpdatePet()
 	bar:SetPoint("TOP", PetFrame, "BOTTOM", 15 + db[K.PetX], db[K.PetY])
 	bar.Spark:SetSize(h * 3.2, h * 3.2)
 	bar.Border:SetSize(196 * (w / 150), 49 * (h / 10))
+	local s = w / baseW
+	bar.BorderShield:SetSize(196 * (w / 150) + 2 * s, 49 * (h / 10))
+	bar.BorderShield:SetPoint("CENTER", -2 * s, 0)
 
 	-- Icon
 	if db[K.PetIcon] then
 		bar.Icon:Show()
-		bar.Icon:SetSize(h * 1.5, h * 1.5)
+		bar.Icon:SetSize(w * 0.15, h * 1.6)
 		bar.Icon:SetScale(db[K.PetIconScale])
 		bar.Icon:ClearAllPoints()
-		bar.Icon:SetPoint("RIGHT", bar, "LEFT", -5 + db[K.PetIconX], db[K.PetIconY])
+		bar.Icon:SetPoint("RIGHT", bar, "LEFT", -1 + db[K.PetIconX], 1 + db[K.PetIconY])
 	else
 		bar.Icon:Hide()
 	end
@@ -52,8 +55,16 @@ function cfCastbars.UpdatePet()
 		bar.Text:Hide()
 	end
 
-	-- Border
-	bar.Border:SetShown(db[K.PetBorder])
+	-- Spark / Flash / Border / Shield
+	bar.Spark:SetShown(db[K.PetSpark])
+	bar.Flash:SetShown(db[K.PetFlash])
+	if db[K.PetBorderShield] then
+		bar.BorderShield:Show()
+		bar.Border:Hide()
+	else
+		bar.BorderShield:Hide()
+		bar.Border:SetShown(db[K.PetBorder])
+	end
 
 	-- Enabled
 	if not db[K.Pet] then

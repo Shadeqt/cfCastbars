@@ -25,6 +25,9 @@ local function ApplyStyle(bar, anchorFrame)
 	bar:SetSize(w, h)
 	bar.Spark:SetSize(h * 3.2, h * 3.2)
 	bar.Border:SetSize(196 * (w / 150), 49 * (h / 10))
+	local s = w / baseW
+	bar.BorderShield:SetSize(196 * (w / 150) + 2 * s, 49 * (h / 10))
+	bar.BorderShield:SetPoint("CENTER", -2 * s, 0)
 
 	-- Position
 	if anchorFrame then
@@ -40,10 +43,10 @@ local function ApplyStyle(bar, anchorFrame)
 	-- Icon
 	if db[K.PartyIcon] then
 		bar.Icon:Show()
-		bar.Icon:SetSize(h * 1.5, h * 1.5)
+		bar.Icon:SetSize(w * 0.15, h * 1.6)
 		bar.Icon:SetScale(db[K.PartyIconScale])
 		bar.Icon:ClearAllPoints()
-		bar.Icon:SetPoint("RIGHT", bar, "LEFT", -5 + db[K.PartyIconX], db[K.PartyIconY])
+		bar.Icon:SetPoint("RIGHT", bar, "LEFT", -1 + db[K.PartyIconX], 1 + db[K.PartyIconY])
 	else
 		bar.Icon:Hide()
 	end
@@ -68,8 +71,16 @@ local function ApplyStyle(bar, anchorFrame)
 		bar.Text:Hide()
 	end
 
-	-- Border
-	bar.Border:SetShown(db[K.PartyBorder])
+	-- Spark / Flash / Border / Shield
+	bar.Spark:SetShown(db[K.PartySpark])
+	bar.Flash:SetShown(db[K.PartyFlash])
+	if db[K.PartyBorderShield] then
+		bar.BorderShield:Show()
+		bar.Border:Hide()
+	else
+		bar.BorderShield:Hide()
+		bar.Border:SetShown(db[K.PartyBorder])
+	end
 end
 
 function cfCastbars.UpdateParty()
@@ -79,6 +90,8 @@ function cfCastbars.UpdateParty()
 		if not db[K.Party] then
 			CastingBarFrame_SetUnit(bar, nil)
 			bar:Hide()
+		elseif bar.cbtTestStart then
+			bar:Show()
 		end
 	end
 end

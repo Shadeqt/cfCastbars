@@ -17,12 +17,15 @@ function cfCastbars.UpdatePlayer()
 	-- 256x64 is the real border size at the template's default 195x13
 	bar.Spark:SetSize(h * 3.2, h * 3.2)
 	bar.Border:SetSize(256 * (w / 195), 64 * (h / 13))
+	local s = w / baseW
+	bar.BorderShield:SetSize(256 * (w / 195) + 6 * s, 64 * (h / 13))
+	bar.BorderShield:SetPoint("CENTER", -6 * s, 0)
 
 	-- Icon
 	if db[K.PlayerIcon] then
 		bar.Icon:ClearAllPoints()
-		bar.Icon:SetPoint("RIGHT", bar, "LEFT", -10 + db[K.PlayerIconX], db[K.PlayerIconY])
-		bar.Icon:SetSize(h * 2, h * 2)
+		bar.Icon:SetPoint("RIGHT", bar, "LEFT", -7 + db[K.PlayerIconX], 1 + db[K.PlayerIconY])
+		bar.Icon:SetSize(w * 0.12, h * 1.8)
 		bar.Icon:SetScale(db[K.PlayerIconScale])
 		bar.Icon:Show()
 	else
@@ -49,8 +52,16 @@ function cfCastbars.UpdatePlayer()
 		bar.Text:Hide()
 	end
 
-	-- Border
-	bar.Border:SetShown(db[K.PlayerBorder])
+	-- Spark / Flash / Border / Shield
+	bar.Spark:SetShown(db[K.PlayerSpark])
+	bar.Flash:SetShown(db[K.PlayerFlash])
+	if db[K.PlayerBorderShield] then
+		bar.BorderShield:Show()
+		bar.Border:Hide()
+	else
+		bar.BorderShield:Hide()
+		bar.Border:SetShown(db[K.PlayerBorder])
+	end
 
 	-- Position
 	local bp = bar.cfcbBasePos
@@ -61,6 +72,8 @@ function cfCastbars.UpdatePlayer()
 	-- Enabled
 	if not db[K.Player] then
 		bar:Hide()
+	elseif bar.cbtTestStart then
+		bar:Show()
 	end
 end
 
@@ -69,6 +82,8 @@ function cfCastbars.InitPlayer()
 	cfCastbars.AddTimer(bar, "GameFontHighlight")
 	bar.Border:ClearAllPoints()
 	bar.Border:SetPoint("CENTER")
+	bar.BorderShield:ClearAllPoints()
+	bar.BorderShield:SetPoint("CENTER")
 	bar.Icon:SetDrawLayer("OVERLAY", 2)
 	cfCastbars.HookPosition(bar, K.PlayerX, K.PlayerY)
 

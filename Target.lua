@@ -17,12 +17,15 @@ function cfCastbars.UpdateTarget()
 	-- 196x49 is the real border size at the template's default 150x10
 	bar.Spark:SetSize(h * 3.2, h * 3.2)
 	bar.Border:SetSize(196 * (w / 150), 49 * (h / 10))
+	local s = w / baseW
+	bar.BorderShield:SetSize(196 * (w / 150) + 6 * s, 49 * (h / 10))
+	bar.BorderShield:SetPoint("CENTER", -4 * s, 0)
 
 	-- Icon
 	if db[K.TargetIcon] then
 		bar.Icon:ClearAllPoints()
-		bar.Icon:SetPoint("RIGHT", bar, "LEFT", -5 + db[K.TargetIconX], db[K.TargetIconY])
-		bar.Icon:SetSize(h * 1.5, h * 1.5)
+		bar.Icon:SetPoint("RIGHT", bar, "LEFT", -5 + db[K.TargetIconX], 1 + db[K.TargetIconY])
+		bar.Icon:SetSize(w * 0.12, h * 1.8)
 		bar.Icon:SetScale(db[K.TargetIconScale])
 		bar.Icon:Show()
 	else
@@ -32,7 +35,7 @@ function cfCastbars.UpdateTarget()
 	-- Timer
 	if db[K.TargetTimer] then
 		bar.Timer:ClearAllPoints()
-		bar.Timer:SetPoint("LEFT", bar, "RIGHT", 5 + db[K.TargetTimerX], db[K.TargetTimerY])
+		bar.Timer:SetPoint("LEFT", bar, "RIGHT", 10 + db[K.TargetTimerX], db[K.TargetTimerY])
 		bar.Timer:SetScale(db[K.TargetTimerScale])
 		bar.Timer:Show()
 	else
@@ -49,8 +52,16 @@ function cfCastbars.UpdateTarget()
 		bar.Text:Hide()
 	end
 
-	-- Border
-	bar.Border:SetShown(db[K.TargetBorder])
+	-- Spark / Flash / Border / Shield
+	bar.Spark:SetShown(db[K.TargetSpark])
+	bar.Flash:SetShown(db[K.TargetFlash])
+	if db[K.TargetBorderShield] then
+		bar.BorderShield:Show()
+		bar.Border:Hide()
+	else
+		bar.BorderShield:Hide()
+		bar.Border:SetShown(db[K.TargetBorder])
+	end
 
 	-- Position
 	local bp = bar.cfcbBasePos
@@ -63,6 +74,8 @@ function cfCastbars.UpdateTarget()
 	-- Enabled
 	if not db[K.Target] then
 		bar:Hide()
+	elseif bar.cbtTestStart then
+		bar:Show()
 	end
 end
 
@@ -71,6 +84,8 @@ function cfCastbars.InitTarget()
 	cfCastbars.AddTimer(bar, "GameFontHighlight")
 	bar.Border:ClearAllPoints()
 	bar.Border:SetPoint("CENTER")
+	bar.BorderShield:ClearAllPoints()
+	bar.BorderShield:SetPoint("CENTER")
 	bar.Icon:SetDrawLayer("OVERLAY", 2)
 	cfCastbars.HookPosition(bar, K.TargetX, K.TargetY)
 

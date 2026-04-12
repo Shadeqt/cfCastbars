@@ -61,9 +61,10 @@ function F.Checkbox(parent, key, label, callback)
 	return cb
 end
 
-function F.BindChildren(checkbox, dependents)
+function F.BindChildren(checkbox, dependents, inverse)
 	local function Update()
 		local enabled = checkbox:GetChecked()
+		if inverse then enabled = not enabled end
 		for _, w in ipairs(dependents) do
 			w:SetAlpha(enabled and 1 or 0.3)
 			w:EnableMouse(enabled)
@@ -72,6 +73,17 @@ function F.BindChildren(checkbox, dependents)
 	checkbox:HookScript("OnClick", Update)
 	checkbox.UpdateChildren = Update
 	Update()
+end
+
+function F.CastbarDeco(parent, r, g, b)
+	local bg = parent:CreateTexture(nil, "ARTWORK")
+	bg:SetColorTexture(r, g, b)
+	bg:SetSize(110, 13)
+	local border = parent:CreateTexture(nil, "OVERLAY")
+	border:SetTexture("Interface\\CastingBar\\UI-CastingBar-Border-Small")
+	border:SetSize(150, 49)
+	border:SetPoint("CENTER", bg, "CENTER", 0, 0)
+	return bg
 end
 
 function F.Button(parent, label, onClick)

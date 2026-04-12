@@ -3,6 +3,8 @@
 local testing = {}
 local testBars = { Player = {}, Target = {}, Party = {}, Pet = {}, Nameplate = {} }
 local forcedFrames = {}
+local K = cfCastbars.K
+local prefixes = {"Player", "Target", "Pet", "Party", "Nameplate"}
 
 local function FakeCast(domain, bar, skipUnbind)
 	bar.cbtUnit = bar.cbtUnit or bar.unit
@@ -22,8 +24,13 @@ local function FakeCast(domain, bar, skipUnbind)
 			local elapsed = (GetTime() - self.cbtTestStart) % 3
 			self:SetValue(elapsed)
 			self:SetStatusBarColor(1, 0.7, 0)
-			self.Flash:Hide()
-			self.Spark:Show()
+			if cfCastbarsDB[K[domain .. "Flash"]] then
+				self.Flash:SetTexture("Interface\\CastingBar\\UI-CastingBar-Flash-Small")
+				self.Flash:SetAlpha(1)
+				self.Flash:Show()
+			else
+				self.Flash:Hide()
+			end
 			self.Spark:SetPoint("CENTER", self, "LEFT", (elapsed / 3) * self:GetWidth(), 0)
 			if self.Timer then self.Timer:SetText(format("%.1f", 3 - elapsed)) end
 		end)
@@ -139,6 +146,7 @@ end
 function cfCastbars.TestNameplate(on)
 	if on then
 		testing.Nameplate = true
+		cfCastbars.UpdateNameplate()
 		for _, bar in pairs(cfCastbars.nameplateBars) do
 			FakeCast("Nameplate", bar)
 		end
@@ -152,7 +160,14 @@ end
 -----------------------------------------------------------------------
 -- All
 -----------------------------------------------------------------------
+local function SetTestCBs(on)
+	if cfCastbars.testCBs then
+		for _, cb in pairs(cfCastbars.testCBs) do cb:SetChecked(on) end
+	end
+end
+
 function cfCastbars.StartTest()
+	SetTestCBs(true)
 	cfCastbars.TestPlayer(true)
 	cfCastbars.TestTarget(true)
 	cfCastbars.TestParty(true)
@@ -161,6 +176,7 @@ function cfCastbars.StartTest()
 end
 
 function cfCastbars.StopTest()
+	SetTestCBs(false)
 	cfCastbars.TestPlayer(false)
 	cfCastbars.TestTarget(false)
 	cfCastbars.TestParty(false)
@@ -186,4 +202,34 @@ SlashCmdList["CFCBT"] = function()
 		cfCastbars.StartTest()
 		print("cfCastbars test: ON")
 	end
+end
+
+local function ForEachTestBar(fn)
+	for domain, list in pairs(testBars) do
+		for _, bar in ipairs(list) do fn(bar) end
+	end
+end
+
+SLASH_CFFLASH1 = "/cfflash"
+SlashCmdList["CFFLASH"] = function()
+	local on = not cfCastbarsDB[K.PlayerFlash]
+	for _, p in ipairs(prefixes) do cfCastbarsDB[K[p .. "Flash"]] = on end
+	cfCastbars.UpdatePlayer()
+	cfCastbars.UpdateTarget()
+	cfCastbars.UpdatePet()
+	cfCastbars.UpdateParty()
+	cfCastbars.UpdateNameplate()
+	print("cfCastbars flash: " .. (on and "ON" or "OFF"))
+end
+
+SLASH_CFSHIELD1 = "/cfshield"
+SlashCmdList["CFSHIELD"] = function()
+	local on = not cfCastbarsDB[K.PlayerBorderShield]
+	for _, p in ipairs(prefixes) do cfCastbarsDB[K[p .. "BorderShield"]] = on end
+	cfCastbars.UpdatePlayer()
+	cfCastbars.UpdateTarget()
+	cfCastbars.UpdatePet()
+	cfCastbars.UpdateParty()
+	cfCastbars.UpdateNameplate()
+	print("cfCastbars shield: " .. (on and "ON" or "OFF"))
 end
