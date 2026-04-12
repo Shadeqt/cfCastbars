@@ -1,3 +1,8 @@
+cfCastbars.BlizzCastbars = {
+	Player = { barW = 195, barH = 13, borderW = 256, borderH = 64, sparkSize = 32, iconSize = 16 },
+	Target = { barW = 150, barH = 10, borderW = 196, borderH = 49, sparkSize = 32, iconSize = 16 },
+}
+
 function cfCastbars.AddTimer(bar, font)
 	bar.Timer = bar:CreateFontString(nil, "OVERLAY", font or "GameFontHighlightSmall")
 	bar.Timer:SetPoint("LEFT", bar, "RIGHT", 5, 0)
@@ -36,9 +41,9 @@ function cfCastbars.CreateCastbar(parent, unit, width, height)
 
 	bar:SetSize(width, height)
 
-	-- 196x49 is the real border size at the template's default 150x10
-	local bw = 196 * (width / 150)
-	local bh = 49 * (height / 10)
+	local T = cfCastbars.BlizzCastbars.Target
+	local bw = T.borderW * (width / T.barW)
+	local bh = T.borderH * (height / T.barH)
 	bar.Border:SetDrawLayer("OVERLAY")
 	bar.Border:ClearAllPoints()
 	bar.Border:SetSize(bw, bh)
@@ -59,8 +64,7 @@ function cfCastbars.CreateCastbar(parent, unit, width, height)
 	bar.Text:ClearAllPoints()
 	bar.Text:SetPoint("CENTER")
 
-	-- 32x32 is the real spark size at the template's default 150x10 (ratio 3.2)
-	bar.Spark:SetSize(height * 3.2, height * 3.2)
+	bar.Spark:SetSize(T.sparkSize * (height / T.barH), T.sparkSize * (height / T.barH))
 
 	cfCastbars.AddTimer(bar)
 

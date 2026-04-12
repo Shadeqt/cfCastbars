@@ -1,7 +1,7 @@
 local bar
 local K = cfCastbars.K
 
-function cfCastbars.UpdatePet()
+function cfCastbars.ApplyPetSettings()
 	local db = cfCastbarsDB
 	local hp = PetFrameHealthBar
 	local baseW, baseH = hp:GetWidth(), hp:GetHeight()
@@ -18,10 +18,11 @@ function cfCastbars.UpdatePet()
 	bar:SetSize(w, h)
 	bar:ClearAllPoints()
 	bar:SetPoint("TOP", PetFrame, "BOTTOM", 15 + db[K.PetX], db[K.PetY])
-	bar.Spark:SetSize(h * 3.2, h * 3.2)
-	bar.Border:SetSize(196 * (w / 150), 49 * (h / 10))
+	local T = cfCastbars.BlizzCastbars.Target
+	bar.Spark:SetSize(T.sparkSize * (h / T.barH), T.sparkSize * (h / T.barH))
+	bar.Border:SetSize(T.borderW * (w / T.barW), T.borderH * (h / T.barH))
 	local s = w / baseW
-	bar.BorderShield:SetSize(196 * (w / 150) + 2 * s, 49 * (h / 10))
+	bar.BorderShield:SetSize(T.borderW * (w / T.barW) + 2 * s, T.borderH * (h / T.barH))
 	bar.BorderShield:SetPoint("CENTER", -2 * s, 0)
 
 	-- Icon
@@ -65,8 +66,13 @@ function cfCastbars.UpdatePet()
 		bar.BorderShield:Hide()
 		bar.Border:SetShown(db[K.PetBorder])
 	end
+end
+
+function cfCastbars.UpdatePet()
+	cfCastbars.ApplyPetSettings()
 
 	-- Enabled
+	local db = cfCastbarsDB
 	if not db[K.Pet] then
 		CastingBarFrame_SetUnit(bar, nil)
 		bar:Hide()

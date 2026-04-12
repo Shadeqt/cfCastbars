@@ -2,7 +2,7 @@ local bar = TargetFrameSpellBar
 local K = cfCastbars.K
 local baseW, baseH
 
-function cfCastbars.UpdateTarget()
+function cfCastbars.ApplyTargetSettings()
 	local db = cfCastbarsDB
 	if not baseW then
 		baseW, baseH = bar:GetWidth(), bar:GetHeight()
@@ -14,11 +14,11 @@ function cfCastbars.UpdateTarget()
 	bar:SetScale(db[K.TargetScale])
 	bar:SetSize(w, h)
 
-	-- 196x49 is the real border size at the template's default 150x10
-	bar.Spark:SetSize(h * 3.2, h * 3.2)
-	bar.Border:SetSize(196 * (w / 150), 49 * (h / 10))
+	local T = cfCastbars.BlizzCastbars.Target
+	bar.Spark:SetSize(T.sparkSize * (h / T.barH), T.sparkSize * (h / T.barH))
+	bar.Border:SetSize(T.borderW * (w / T.barW), T.borderH * (h / T.barH))
 	local s = w / baseW
-	bar.BorderShield:SetSize(196 * (w / 150) + 6 * s, 49 * (h / 10))
+	bar.BorderShield:SetSize(T.borderW * (w / T.barW) + 6 * s, T.borderH * (h / T.barH))
 	bar.BorderShield:SetPoint("CENTER", -4 * s, 0)
 
 	-- Icon
@@ -70,9 +70,13 @@ function cfCastbars.UpdateTarget()
 		bar:SetPoint(bp[1], bp[2], bp[3], bp[4] + db[K.TargetX], bp[5] + db[K.TargetY] + (bar.cbtYOffset or 0))
 		bar.cfcbHook = nil
 	end
+end
+
+function cfCastbars.UpdateTarget()
+	cfCastbars.ApplyTargetSettings()
 
 	-- Enabled
-	if not db[K.Target] then
+	if not cfCastbarsDB[K.Target] then
 		bar:Hide()
 	elseif bar.cbtTestStart then
 		bar:Show()

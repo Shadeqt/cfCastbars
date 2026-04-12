@@ -15,7 +15,6 @@ local function FakeCast(domain, bar, skipUnbind)
 	bar.Icon:SetTexture("Interface\\Icons\\Spell_Nature_Lightning")
 	bar.Icon:Show()
 	bar.Text:SetText("Test Cast")
-	bar.Flash:Hide()
 	bar.cbtTestStart = GetTime()
 	if not bar.cbtHooked then
 		bar:HookScript("OnUpdate", function(self)
@@ -24,13 +23,6 @@ local function FakeCast(domain, bar, skipUnbind)
 			local elapsed = (GetTime() - self.cbtTestStart) % 3
 			self:SetValue(elapsed)
 			self:SetStatusBarColor(1, 0.7, 0)
-			if cfCastbarsDB[K[domain .. "Flash"]] then
-				self.Flash:SetTexture("Interface\\CastingBar\\UI-CastingBar-Flash-Small")
-				self.Flash:SetAlpha(1)
-				self.Flash:Show()
-			else
-				self.Flash:Hide()
-			end
 			self.Spark:SetPoint("CENTER", self, "LEFT", (elapsed / 3) * self:GetWidth(), 0)
 			if self.Timer then self.Timer:SetText(format("%.1f", 3 - elapsed)) end
 		end)
@@ -82,6 +74,7 @@ function cfCastbars.TestPlayer(on)
 	if on then
 		testing.Player = true
 		FakeCast("Player", CastingBarFrame, true)
+		cfCastbars.ApplyPlayerSettings()
 	else
 		StopDomain("Player")
 	end
@@ -100,6 +93,7 @@ function cfCastbars.TestTarget(on)
 		local bar = TargetFrameSpellBar
 		bar.cbtYOffset = -40
 		FakeCast("Target", bar, true)
+		cfCastbars.ApplyTargetSettings()
 	else
 		TargetFrameSpellBar.cbtYOffset = nil
 		StopDomain("Target")
@@ -120,6 +114,7 @@ function cfCastbars.TestParty(on)
 		end
 		for _, bar in pairs(cfCastbars.partyBars) do
 			FakeCast("Party", bar)
+			cfCastbars.ApplyPartySettings(bar, bar:GetParent())
 		end
 	else
 		StopDomain("Party")
@@ -134,7 +129,10 @@ function cfCastbars.TestPet(on)
 		testing.Pet = true
 		ForceShow(PetFrame)
 		cfCastbars.UpdatePet()
-		if cfCastbars.petBar then FakeCast("Pet", cfCastbars.petBar) end
+		if cfCastbars.petBar then
+			FakeCast("Pet", cfCastbars.petBar)
+			cfCastbars.ApplyPetSettings()
+		end
 	else
 		StopDomain("Pet")
 	end
@@ -149,6 +147,7 @@ function cfCastbars.TestNameplate(on)
 		cfCastbars.UpdateNameplate()
 		for _, bar in pairs(cfCastbars.nameplateBars) do
 			FakeCast("Nameplate", bar)
+			cfCastbars.ApplyNameplateSettings(bar)
 		end
 		listener:RegisterEvent("NAME_PLATE_UNIT_ADDED")
 	else
@@ -201,12 +200,6 @@ SlashCmdList["CFCBT"] = function()
 	else
 		cfCastbars.StartTest()
 		print("cfCastbars test: ON")
-	end
-end
-
-local function ForEachTestBar(fn)
-	for domain, list in pairs(testBars) do
-		for _, bar in ipairs(list) do fn(bar) end
 	end
 end
 

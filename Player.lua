@@ -2,7 +2,7 @@ local bar = CastingBarFrame
 local K = cfCastbars.K
 local baseW, baseH
 
-function cfCastbars.UpdatePlayer()
+function cfCastbars.ApplyPlayerSettings()
 	local db = cfCastbarsDB
 	if not baseW then
 		baseW, baseH = bar:GetWidth(), bar:GetHeight()
@@ -14,11 +14,11 @@ function cfCastbars.UpdatePlayer()
 	bar:SetScale(db[K.PlayerScale])
 	bar:SetSize(w, h)
 
-	-- 256x64 is the real border size at the template's default 195x13
-	bar.Spark:SetSize(h * 3.2, h * 3.2)
-	bar.Border:SetSize(256 * (w / 195), 64 * (h / 13))
+	local T = cfCastbars.BlizzCastbars.Player
+	bar.Spark:SetSize(T.sparkSize * (h / T.barH), T.sparkSize * (h / T.barH))
+	bar.Border:SetSize(T.borderW * (w / T.barW), T.borderH * (h / T.barH))
 	local s = w / baseW
-	bar.BorderShield:SetSize(256 * (w / 195) + 6 * s, 64 * (h / 13))
+	bar.BorderShield:SetSize(T.borderW * (w / T.barW) + 6 * s, T.borderH * (h / T.barH))
 	bar.BorderShield:SetPoint("CENTER", -6 * s, 0)
 
 	-- Icon
@@ -68,9 +68,13 @@ function cfCastbars.UpdatePlayer()
 	bar.cfcbHook = true
 	bar:SetPoint(bp[1], bp[2], bp[3], bp[4] + db[K.PlayerX], bp[5] + db[K.PlayerY])
 	bar.cfcbHook = nil
+end
+
+function cfCastbars.UpdatePlayer()
+	cfCastbars.ApplyPlayerSettings()
 
 	-- Enabled
-	if not db[K.Player] then
+	if not cfCastbarsDB[K.Player] then
 		bar:Hide()
 	elseif bar.cbtTestStart then
 		bar:Show()

@@ -10,7 +10,7 @@ local function CreateNameplateCastbar(unitFrame, unit)
 	return bar
 end
 
-local function ApplyStyle(bar)
+function cfCastbars.ApplyNameplateSettings(bar)
 	local db = cfCastbarsDB
 	local hp = bar:GetParent().healthBar
 	local baseW, baseH = hp:GetWidth(), hp:GetHeight()
@@ -18,10 +18,11 @@ local function ApplyStyle(bar)
 	local h = baseH + db[K.NameplateHeight]
 	bar:SetScale(db[K.NameplateScale])
 	bar:SetSize(w, h)
-	bar.Spark:SetSize(h * 3.2, h * 3.2)
-	bar.Border:SetSize(196 * (w / 150), 49 * (h / 10))
+	local T = cfCastbars.BlizzCastbars.Target
+	bar.Spark:SetSize(T.sparkSize * (h / T.barH), T.sparkSize * (h / T.barH))
+	bar.Border:SetSize(T.borderW * (w / T.barW), T.borderH * (h / T.barH))
 	local s = w / baseW
-	bar.BorderShield:SetSize(196 * (w / 150) + 4 * s, 49 * (h / 10))
+	bar.BorderShield:SetSize(T.borderW * (w / T.barW) + 4 * s, T.borderH * (h / T.barH))
 	bar.BorderShield:SetPoint("CENTER", -3 * s, 0)
 
 	-- Position
@@ -74,7 +75,7 @@ end
 function cfCastbars.UpdateNameplate()
 	local db = cfCastbarsDB
 	for _, bar in pairs(bars) do
-		ApplyStyle(bar)
+		cfCastbars.ApplyNameplateSettings(bar)
 		if not db[K.Nameplate] then
 			CastingBarFrame_SetUnit(bar, nil)
 			bar:Hide()
@@ -86,7 +87,7 @@ end
 
 local function SetupCastbar(plate, unit)
 	if not bars[unit] then CreateNameplateCastbar(plate.UnitFrame, unit) end
-	ApplyStyle(bars[unit])
+	cfCastbars.ApplyNameplateSettings(bars[unit])
 	CastingBarFrame_SetUnit(bars[unit], unit)
 	if UnitCastingInfo(unit) or UnitChannelInfo(unit) then
 		CastingBarFrame_OnEvent(bars[unit], "PLAYER_ENTERING_WORLD")
