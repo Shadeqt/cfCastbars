@@ -26,7 +26,7 @@ EventUtil.ContinueOnAddOnLoaded("cfCastbars", function()
 	cfCastbars.InitTarget()
 
 	-- GUI
-	cfCastbars.SetupPetGUI()
+	cfCastbars.SetupSettings()
 
 	SLASH_CFCB1 = "/cfcb"
 	SlashCmdList["CFCB"] = function()

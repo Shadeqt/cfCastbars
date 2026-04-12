@@ -13,5 +13,5 @@ Nameplate.lua
 Player.lua
 Target.lua
 GUI\_Factory.lua
-GUI\Pet.lua
+GUI\Settings.lua
 Test.lua

@@ -106,6 +106,51 @@ function F.ResetPrefix(prefix, callback)
 	if callback then callback() end
 end
 
+local dropdownCount = 0
+
+function F.Dropdown(parent, key, label, items, callback)
+	dropdownCount = dropdownCount + 1
+	local name = "cfCastbarsDropdown" .. dropdownCount
+	local frame = CreateFrame("Frame", name, parent, "UIDropDownMenuTemplate")
+	UIDropDownMenu_SetWidth(frame, 110)
+
+	local function GetLabel(value)
+		for _, item in ipairs(items) do
+			if item[1] == value then return item[2] end
+		end
+		return items[1][2]
+	end
+
+	UIDropDownMenu_SetText(frame, GetLabel(cfCastbarsDB[key]))
+
+	UIDropDownMenu_Initialize(frame, function()
+		for _, item in ipairs(items) do
+			local info = UIDropDownMenu_CreateInfo()
+			info.text = item[2]
+			info.value = item[1]
+			info.checked = (cfCastbarsDB[key] == item[1])
+			info.func = function(self)
+				cfCastbarsDB[key] = self.value
+				UIDropDownMenu_SetText(frame, self:GetText())
+				CloseDropDownMenus()
+				if callback then callback(self.value) end
+			end
+			UIDropDownMenu_AddButton(info)
+		end
+	end)
+
+	local lbl = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+	lbl:SetText(label)
+	lbl:SetTextColor(1, 0.82, 0)
+	lbl:SetPoint("BOTTOMLEFT", frame, "TOPLEFT", 20, 0)
+
+	frame.Refresh = function()
+		UIDropDownMenu_SetText(frame, GetLabel(cfCastbarsDB[key]))
+	end
+	widgets[key] = frame
+	return frame
+end
+
 function F.Slider(parent, key, label, min, max, step, callback)
 	local slider = CreateFrame("Slider", nil, parent, "OptionsSliderTemplate")
 	slider:SetWidth(140)
@@ -119,6 +164,12 @@ function F.Slider(parent, key, label, min, max, step, callback)
 	slider.Low:Hide()
 	slider.High:Hide()
 	slider:SetValue(cfCastbarsDB[key])
+	slider:EnableMouseWheel(true)
+	slider:SetScript("OnMouseWheel", function(self, delta)
+		if IsShiftKeyDown() then
+			self:SetValue(self:GetValue() + delta * step)
+		end
+	end)
 	slider:SetScript("OnValueChanged", function(self, value)
 		cfCastbarsDB[key] = value
 		self.Text:SetText(label .. ": " .. Fmt(value))

@@ -19,6 +19,18 @@ cfCastbars.BlizzCastbars = {
 	},
 }
 
+local function ApplyFontOutline(fs, value)
+	local path, size = fs:GetFont()
+	if not path then return end
+	if value == "DEFAULT" then
+		fs:SetFont(path, size, "")
+		fs:SetShadowOffset(1, -1)
+	else
+		fs:SetFont(path, size, value)
+		fs:SetShadowOffset(0, 0)
+	end
+end
+
 function cfCastbars.ApplyBarSettings(bar, template, prefix)
 	local T = cfCastbars.BlizzCastbars[template]
 	local K = cfCastbars.K
@@ -80,6 +92,9 @@ function cfCastbars.ApplyBarSettings(bar, template, prefix)
 		bar.Text:Hide()
 	end
 
+	-- Font outline
+	ApplyFontOutline(bar.Text, db[K[prefix .. "TextFontOutline"]])
+
 	-- Timer Y (Text visual center from Blizzard base)
 	local baseTextY = T.textY * scaleH
 	local timerY = h / 2 + baseTextY - th / 2
@@ -102,6 +117,7 @@ function cfCastbars.ApplyBarSettings(bar, template, prefix)
 		bar.Timer:ClearAllPoints()
 		bar.Timer:SetPoint("LEFT", bar, "RIGHT", T.timerX + db[K[prefix .. "TimerX"]], timerY + db[K[prefix .. "TimerY"]])
 		bar.Timer:SetScale(db[K[prefix .. "TimerScale"]])
+		ApplyFontOutline(bar.Timer, db[K[prefix .. "TimerFontOutline"]])
 		bar.Timer:Show()
 	else
 		bar.Timer:Hide()

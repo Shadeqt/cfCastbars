@@ -26,6 +26,8 @@ K.PetTimerY        = "PetTimerY"
 K.PetTextScale     = "PetTextScale"
 K.PetTextX         = "PetTextX"
 K.PetTextY         = "PetTextY"
+K.PetTextFontOutline    = "PetTextFontOutline"
+K.PetTimerFontOutline   = "PetTimerFontOutline"
 
 -----------------------------------------------------------------------
 -- Party
@@ -52,6 +54,8 @@ K.PartyTimerY        = "PartyTimerY"
 K.PartyTextScale     = "PartyTextScale"
 K.PartyTextX         = "PartyTextX"
 K.PartyTextY         = "PartyTextY"
+K.PartyTextFontOutline    = "PartyTextFontOutline"
+K.PartyTimerFontOutline   = "PartyTimerFontOutline"
 
 -----------------------------------------------------------------------
 -- Nameplate
@@ -78,6 +82,8 @@ K.NameplateTimerY        = "NameplateTimerY"
 K.NameplateTextScale     = "NameplateTextScale"
 K.NameplateTextX         = "NameplateTextX"
 K.NameplateTextY         = "NameplateTextY"
+K.NameplateTextFontOutline    = "NameplateTextFontOutline"
+K.NameplateTimerFontOutline   = "NameplateTimerFontOutline"
 
 -----------------------------------------------------------------------
 -- Player
@@ -104,6 +110,8 @@ K.PlayerTimerY        = "PlayerTimerY"
 K.PlayerTextScale     = "PlayerTextScale"
 K.PlayerTextX         = "PlayerTextX"
 K.PlayerTextY         = "PlayerTextY"
+K.PlayerTextFontOutline    = "PlayerTextFontOutline"
+K.PlayerTimerFontOutline   = "PlayerTimerFontOutline"
 
 -----------------------------------------------------------------------
 -- Target
@@ -130,6 +138,8 @@ K.TargetTimerY        = "TargetTimerY"
 K.TargetTextScale     = "TargetTextScale"
 K.TargetTextX         = "TargetTextX"
 K.TargetTextY         = "TargetTextY"
+K.TargetTextFontOutline    = "TargetTextFontOutline"
+K.TargetTimerFontOutline   = "TargetTimerFontOutline"
 
 -----------------------------------------------------------------------
 -- Defaults
@@ -138,7 +148,9 @@ local D = {}
 cfCastbars.DEFAULTS = D
 
 for key in pairs(K) do
-	if key:match("Scale$") then
+	if key:match("FontOutline$") then
+		D[key] = "DEFAULT"
+	elseif key:match("Scale$") then
 		D[key] = 1
 	elseif key:match("X$") or key:match("Y$") or key:match("Width$") or key:match("Height$") then
 		D[key] = 0
