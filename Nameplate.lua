@@ -18,58 +18,11 @@ function cfCastbars.ApplyNameplateSettings(bar)
 	local h = baseH + db[K.NameplateHeight]
 	bar:SetScale(db[K.NameplateScale])
 	bar:SetSize(w, h)
-	local T = cfCastbars.BlizzCastbars.Target
-	bar.Spark:SetSize(T.sparkSize * (h / T.barH), T.sparkSize * (h / T.barH))
-	bar.Border:SetSize(T.borderW * (w / T.barW), T.borderH * (h / T.barH))
-	local s = w / baseW
-	bar.BorderShield:SetSize(T.borderW * (w / T.barW) + 4 * s, T.borderH * (h / T.barH))
-	bar.BorderShield:SetPoint("CENTER", -3 * s, 0)
+	cfCastbars.ApplyBarSettings(bar, "Target", "Nameplate")
 
 	-- Position
 	bar:ClearAllPoints()
 	bar:SetPoint("TOP", hp, "BOTTOM", db[K.NameplateX], -5 + db[K.NameplateY])
-
-	-- Icon
-	if db[K.NameplateIcon] then
-		bar.Icon:Show()
-		bar.Icon:SetSize(w * 0.15, h * 1.6)
-		bar.Icon:SetScale(db[K.NameplateIconScale])
-		bar.Icon:ClearAllPoints()
-		bar.Icon:SetPoint("RIGHT", bar, "LEFT", -2 + db[K.NameplateIconX], 1 + db[K.NameplateIconY])
-	else
-		bar.Icon:Hide()
-	end
-
-	-- Timer
-	if db[K.NameplateTimer] then
-		bar.Timer:Show()
-		bar.Timer:SetScale(db[K.NameplateTimerScale])
-		bar.Timer:ClearAllPoints()
-		bar.Timer:SetPoint("LEFT", bar, "RIGHT", 5 + db[K.NameplateTimerX], db[K.NameplateTimerY])
-	else
-		bar.Timer:Hide()
-	end
-
-	-- Text
-	if db[K.NameplateText] then
-		bar.Text:Show()
-		bar.Text:SetScale(db[K.NameplateTextScale])
-		bar.Text:ClearAllPoints()
-		bar.Text:SetPoint("CENTER", bar, "CENTER", db[K.NameplateTextX], db[K.NameplateTextY])
-	else
-		bar.Text:Hide()
-	end
-
-	-- Spark / Flash / Border / Shield
-	bar.Spark:SetShown(db[K.NameplateSpark])
-	bar.Flash:SetShown(db[K.NameplateFlash])
-	if db[K.NameplateBorderShield] then
-		bar.BorderShield:Show()
-		bar.Border:Hide()
-	else
-		bar.BorderShield:Hide()
-		bar.Border:SetShown(db[K.NameplateBorder])
-	end
 end
 
 function cfCastbars.UpdateNameplate()
@@ -87,11 +40,11 @@ end
 
 local function SetupCastbar(plate, unit)
 	if not bars[unit] then CreateNameplateCastbar(plate.UnitFrame, unit) end
-	cfCastbars.ApplyNameplateSettings(bars[unit])
 	CastingBarFrame_SetUnit(bars[unit], unit)
 	if UnitCastingInfo(unit) or UnitChannelInfo(unit) then
 		CastingBarFrame_OnEvent(bars[unit], "PLAYER_ENTERING_WORLD")
 	end
+	cfCastbars.ApplyNameplateSettings(bars[unit])
 end
 
 function cfCastbars.InitNameplate()

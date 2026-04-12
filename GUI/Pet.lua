@@ -97,7 +97,6 @@ function cfCastbars.SetupPetGUI()
 	F.BindChildren(plIcon, {plhIcon, plIconScale, plIconX, plIconY})
 	F.BindChildren(plTimer, {plhTimer, plTimerScale, plTimerX, plTimerY})
 	F.BindChildren(plText, {plhText, plTextScale, plTextX, plTextY})
-	F.BindChildren(plShield, {plBorder}, true)
 	F.BindChildren(plEnabled, {plIcon, plTimer, plText, plBorder, plSpark, plShield, plFlash, plhCb, plScale, plX, plY, plW, plH, plhIcon, plIconScale, plIconX, plIconY, plhTimer, plTimerScale, plTimerX, plTimerY, plhText, plTextScale, plTextX, plTextY})
 	-----------------------------------------------------------------------
 	-- Column 2: Target
@@ -173,7 +172,6 @@ function cfCastbars.SetupPetGUI()
 	F.BindChildren(tgIcon, {tghIcon, tgIconScale, tgIconX, tgIconY})
 	F.BindChildren(tgTimer, {tghTimer, tgTimerScale, tgTimerX, tgTimerY})
 	F.BindChildren(tgText, {tghText, tgTextScale, tgTextX, tgTextY})
-	F.BindChildren(tgShield, {tgBorder}, true)
 	F.BindChildren(tgEnabled, {tgIcon, tgTimer, tgText, tgBorder, tgSpark, tgShield, tgFlash, tghCb, tgScale, tgX, tgY, tgW, tgH, tghIcon, tgIconScale, tgIconX, tgIconY, tghTimer, tgTimerScale, tgTimerX, tgTimerY, tghText, tgTextScale, tgTextX, tgTextY})
 	-----------------------------------------------------------------------
 	-- Column 3: Pet
@@ -249,7 +247,6 @@ function cfCastbars.SetupPetGUI()
 	F.BindChildren(ptIcon, {pthIcon, ptIconScale, ptIconX, ptIconY})
 	F.BindChildren(ptTimer, {pthTimer, ptTimerScale, ptTimerX, ptTimerY})
 	F.BindChildren(ptText, {pthText, ptTextScale, ptTextX, ptTextY})
-	F.BindChildren(ptShield, {ptBorder}, true)
 	F.BindChildren(ptEnabled, {ptIcon, ptTimer, ptText, ptBorder, ptSpark, ptShield, ptFlash, pthCb, ptScale, ptX, ptY, ptW, ptH, pthIcon, ptIconScale, ptIconX, ptIconY, pthTimer, ptTimerScale, ptTimerX, ptTimerY, pthText, ptTextScale, ptTextX, ptTextY})
 	-----------------------------------------------------------------------
 	-- Row 1 separators
@@ -346,7 +343,6 @@ function cfCastbars.SetupPetGUI()
 	F.BindChildren(paIcon, {pahIcon, paIconScale, paIconX, paIconY})
 	F.BindChildren(paTimer, {pahTimer, paTimerScale, paTimerX, paTimerY})
 	F.BindChildren(paText, {pahText, paTextScale, paTextX, paTextY})
-	F.BindChildren(paShield, {paBorder}, true)
 	F.BindChildren(paEnabled, {paIcon, paTimer, paText, paBorder, paSpark, paShield, paFlash, pahCb, paScale, paX, paY, paW, paH, pahIcon, paIconScale, paIconX, paIconY, pahTimer, paTimerScale, paTimerX, paTimerY, pahText, paTextScale, paTextX, paTextY})
 	-----------------------------------------------------------------------
 	-- Row 2, Column 2: Nameplate
@@ -422,7 +418,6 @@ function cfCastbars.SetupPetGUI()
 	F.BindChildren(npIcon, {nphIcon, npIconScale, npIconX, npIconY})
 	F.BindChildren(npTimer, {nphTimer, npTimerScale, npTimerX, npTimerY})
 	F.BindChildren(npText, {nphText, npTextScale, npTextX, npTextY})
-	F.BindChildren(npShield, {npBorder}, true)
 	F.BindChildren(npEnabled, {npIcon, npTimer, npText, npBorder, npSpark, npShield, npFlash, nphCb, npScale, npX, npY, npW, npH, nphIcon, npIconScale, npIconX, npIconY, nphTimer, npTimerScale, npTimerX, npTimerY, nphText, npTextScale, npTextX, npTextY})
 	-----------------------------------------------------------------------
 	-- Row 2 separator

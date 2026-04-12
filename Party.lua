@@ -23,12 +23,7 @@ function cfCastbars.ApplyPartySettings(bar, anchorFrame)
 	local h = baseH + db[K.PartyHeight]
 	bar:SetScale(db[K.PartyScale])
 	bar:SetSize(w, h)
-	local T = cfCastbars.BlizzCastbars.Target
-	bar.Spark:SetSize(T.sparkSize * (h / T.barH), T.sparkSize * (h / T.barH))
-	bar.Border:SetSize(T.borderW * (w / T.barW), T.borderH * (h / T.barH))
-	local s = w / baseW
-	bar.BorderShield:SetSize(T.borderW * (w / T.barW) + 2 * s, T.borderH * (h / T.barH))
-	bar.BorderShield:SetPoint("CENTER", -2 * s, 0)
+	cfCastbars.ApplyBarSettings(bar, "Target", "Party")
 
 	-- Position
 	if anchorFrame then
@@ -39,48 +34,6 @@ function cfCastbars.ApplyPartySettings(bar, anchorFrame)
 		else
 			bar:SetPoint("BOTTOM", anchorFrame, "TOP", 18 + db[K.PartyX], -8 + db[K.PartyY])
 		end
-	end
-
-	-- Icon
-	if db[K.PartyIcon] then
-		bar.Icon:Show()
-		bar.Icon:SetSize(w * 0.15, h * 1.6)
-		bar.Icon:SetScale(db[K.PartyIconScale])
-		bar.Icon:ClearAllPoints()
-		bar.Icon:SetPoint("RIGHT", bar, "LEFT", -1 + db[K.PartyIconX], 1 + db[K.PartyIconY])
-	else
-		bar.Icon:Hide()
-	end
-
-	-- Timer
-	if db[K.PartyTimer] then
-		bar.Timer:Show()
-		bar.Timer:SetScale(db[K.PartyTimerScale])
-		bar.Timer:ClearAllPoints()
-		bar.Timer:SetPoint("LEFT", bar, "RIGHT", 5 + db[K.PartyTimerX], db[K.PartyTimerY])
-	else
-		bar.Timer:Hide()
-	end
-
-	-- Text
-	if db[K.PartyText] then
-		bar.Text:Show()
-		bar.Text:SetScale(db[K.PartyTextScale])
-		bar.Text:ClearAllPoints()
-		bar.Text:SetPoint("CENTER", bar, "CENTER", db[K.PartyTextX], db[K.PartyTextY])
-	else
-		bar.Text:Hide()
-	end
-
-	-- Spark / Flash / Border / Shield
-	bar.Spark:SetShown(db[K.PartySpark])
-	bar.Flash:SetShown(db[K.PartyFlash])
-	if db[K.PartyBorderShield] then
-		bar.BorderShield:Show()
-		bar.Border:Hide()
-	else
-		bar.BorderShield:Hide()
-		bar.Border:SetShown(db[K.PartyBorder])
 	end
 end
 

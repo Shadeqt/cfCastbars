@@ -61,10 +61,9 @@ function F.Checkbox(parent, key, label, callback)
 	return cb
 end
 
-function F.BindChildren(checkbox, dependents, inverse)
+function F.BindChildren(checkbox, dependents)
 	local function Update()
 		local enabled = checkbox:GetChecked()
-		if inverse then enabled = not enabled end
 		for _, w in ipairs(dependents) do
 			w:SetAlpha(enabled and 1 or 0.3)
 			w:EnableMouse(enabled)
