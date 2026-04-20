@@ -151,6 +151,53 @@ function F.Dropdown(parent, key, label, items, callback)
 	return frame
 end
 
+function F.ColorPicker(parent, key, label, callback)
+	local btn = CreateFrame("Button", nil, parent)
+	btn:SetSize(20, 20)
+
+	local border = btn:CreateTexture(nil, "BACKGROUND")
+	border:SetColorTexture(1, 1, 1, 1)
+	border:SetAllPoints()
+
+	local swatch = btn:CreateTexture(nil, "ARTWORK")
+	swatch:SetPoint("TOPLEFT", 1, -1)
+	swatch:SetPoint("BOTTOMRIGHT", -1, 1)
+	local c = cfCastbarsDB[key]
+	swatch:SetColorTexture(c.r, c.g, c.b)
+
+	local lbl = btn:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+	lbl:SetText(label)
+	lbl:SetTextColor(1, 0.82, 0)
+	lbl:SetPoint("LEFT", btn, "RIGHT", 5, 0)
+
+	btn:SetScript("OnClick", function()
+		local prev = {r = cfCastbarsDB[key].r, g = cfCastbarsDB[key].g, b = cfCastbarsDB[key].b}
+		local function OnColor()
+			local r, g, b = ColorPickerFrame:GetColorRGB()
+			cfCastbarsDB[key] = {r = r, g = g, b = b}
+			swatch:SetColorTexture(r, g, b)
+			if callback then callback() end
+		end
+		ColorPickerFrame.func = OnColor
+		ColorPickerFrame.swatchFunc = OnColor
+		ColorPickerFrame.cancelFunc = function()
+			cfCastbarsDB[key] = prev
+			swatch:SetColorTexture(prev.r, prev.g, prev.b)
+			if callback then callback() end
+		end
+		ColorPickerFrame.hasOpacity = false
+		ColorPickerFrame:SetColorRGB(prev.r, prev.g, prev.b)
+		ColorPickerFrame:Show()
+	end)
+
+	btn.Refresh = function()
+		local col = cfCastbarsDB[key]
+		swatch:SetColorTexture(col.r, col.g, col.b)
+	end
+	widgets[key] = btn
+	return btn
+end
+
 function F.Slider(parent, key, label, min, max, step, callback)
 	local slider = CreateFrame("Slider", nil, parent, "OptionsSliderTemplate")
 	slider:SetWidth(140)

@@ -136,9 +136,11 @@ function cfCastbars.SetupSettings()
 	tgShield:SetPoint("TOPLEFT", tgBorder, "BOTTOMLEFT", 0, -5)
 	local tgFlash = F.Checkbox(sc, K.TargetFlash, "Flash", tg)
 	tgFlash:SetPoint("LEFT", tgShield, "RIGHT", 60, 0)
+	local tgFlashColor = F.ColorPicker(sc, K.TargetFlashColor, "Flash Color", tg)
+	tgFlashColor:SetPoint("TOPLEFT", tgShield, "BOTTOMLEFT", 0, -5)
 
 	local tghCb = F.Text(sc, "Castbar", "GameFontNormal")
-	tghCb:SetPoint("TOPLEFT", tgShield, "BOTTOMLEFT", 0, -15)
+	tghCb:SetPoint("TOPLEFT", tgFlashColor, "BOTTOMLEFT", 0, -15)
 	local tgScale = F.Slider(sc, K.TargetScale, "Castbar Scale", 0.1, 1.9, 0.05, tg)
 	tgScale:SetPoint("TOPLEFT", tghCb, "BOTTOMLEFT", 0, -10)
 	local tgX = F.Slider(sc, K.TargetX, "Castbar X", -300, 300, 1, tg)
@@ -187,7 +189,8 @@ function cfCastbars.SetupSettings()
 	F.BindChildren(tgIcon, {tghIcon, tgIconScale, tgIconX, tgIconY})
 	F.BindChildren(tgTimer, {tghTimer, tgTimerScale, tgTimerX, tgTimerY, tgTimerFontOutline})
 	F.BindChildren(tgText, {tghText, tgTextScale, tgTextX, tgTextY, tgFontOutline})
-	F.BindChildren(tgEnabled, {tgIcon, tgTimer, tgText, tgBorder, tgSpark, tgShield, tgFlash, tghCb, tgScale, tgX, tgY, tgW, tgH, tghIcon, tgIconScale, tgIconX, tgIconY, tghTimer, tgTimerScale, tgTimerX, tgTimerY, tgTimerFontOutline, tghText, tgTextScale, tgTextX, tgTextY, tgFontOutline})
+	F.BindChildren(tgFlash, {tgFlashColor})
+	F.BindChildren(tgEnabled, {tgIcon, tgTimer, tgText, tgBorder, tgSpark, tgShield, tgFlash, tgFlashColor, tghCb, tgScale, tgX, tgY, tgW, tgH, tghIcon, tgIconScale, tgIconX, tgIconY, tghTimer, tgTimerScale, tgTimerX, tgTimerY, tgTimerFontOutline, tghText, tgTextScale, tgTextX, tgTextY, tgFontOutline})
 	-----------------------------------------------------------------------
 	-- Column 3: Pet
 	-----------------------------------------------------------------------

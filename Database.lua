@@ -122,6 +122,7 @@ K.TargetTimer         = "TargetTimer"
 K.TargetText          = "TargetText"
 K.TargetBorder        = "TargetBorder"
 K.TargetFlash         = "TargetFlash"
+K.TargetFlashColor    = "TargetFlashColor"
 K.TargetBorderShield  = "TargetBorderShield"
 K.TargetSpark         = "TargetSpark"
 K.TargetScale         = "TargetScale"
@@ -148,7 +149,9 @@ local D = {}
 cfCastbars.DEFAULTS = D
 
 for key in pairs(K) do
-	if key:match("FontOutline$") then
+	if key:match("Color$") then
+		D[key] = {r = 1, g = 1, b = 1}
+	elseif key:match("FontOutline$") then
 		D[key] = "DEFAULT"
 	elseif key:match("Scale$") then
 		D[key] = 1

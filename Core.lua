@@ -53,6 +53,8 @@ function cfCastbars.ApplyBarSettings(bar, template, prefix)
 	bar.Flash:SetSize(bw, bh)
 	bar.Flash:SetPoint("TOP", bar, "TOP", 0, by)
 	bar.Flash:SetShown(db[K[prefix .. "Flash"]])
+	local fc = db[K[prefix .. "FlashColor"]]
+	if fc then bar.Flash:SetVertexColor(fc.r, fc.g, fc.b) end
 
 	-- BorderShield (draw above Border)
 	local sw = T.shieldW * scaleW
