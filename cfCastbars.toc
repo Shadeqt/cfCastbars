@@ -1,17 +1,12 @@
 ## Interface: 11508
-## Title: cfCastbars
-## Notes: Castbar POC
-## Author: Cowfoot
-## SavedVariablesPerCharacter: cfCastbarsDB
+## Title:     cfCastbars
+## Notes:     Castbar overlays on player/pet/party/nameplate
+## Author:    Cowfoot
+## Version:   2.0
 
-Init.lua
-Database.lua
 Core.lua
-Pet.lua
-Party.lua
-Nameplate.lua
-Player.lua
-Target.lua
-GUI\_Factory.lua
-GUI\Settings.lua
-Test.lua
+
+Features\Player.lua
+Features\Pet.lua
+Features\Party.lua
+Features\Nameplate.lua
