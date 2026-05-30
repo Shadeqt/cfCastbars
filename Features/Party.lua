@@ -1,39 +1,51 @@
 local _, addon = ...
 
-local regularBars = {}
+addon.partyBars = {}           -- regular-frame bars, also reused by the test harness
+local regularBars = addon.partyBars
 local compactBars = {}
 local baseW, baseH
 
-local function TearDownRegular()
-	for _, bar in pairs(regularBars) do
-		CastingBarFrame_SetUnit(bar, nil)
-		bar:Hide()
+local function EnsureBase()
+	if not baseW then
+		local hp = PartyMemberFrame1HealthBar
+		baseW, baseH = hp:GetWidth(), hp:GetHeight()
 	end
 end
 
-local function TearDownCompact()
-	for _, bar in pairs(compactBars) do
+-- Build + place a party castbar. Single source of truth for party bar
+-- geometry, shared by the production event handler and the /cfcb test harness.
+function addon.BuildPartyRegularBar(frame, unit)
+	EnsureBase()
+	local bar = addon.CreateCastbar(frame, unit, baseW * 1.25, baseH)
+	bar:SetPoint("TOP", frame, "BOTTOM", 10, 0)
+	bar:SetFrameLevel(frame:GetFrameLevel() + 3)
+	return bar
+end
+
+function addon.BuildPartyCompactBar(frame, unit)
+	EnsureBase()
+	local bar = addon.CreateCastbar(frame, unit, baseW, baseH)
+	bar:SetPoint("CENTER")
+	return bar
+end
+
+local function TearDown(t)
+	for _, bar in pairs(t) do
 		CastingBarFrame_SetUnit(bar, nil)
 		bar:Hide()
 	end
 end
 
 local function SetupRegular()
-	TearDownCompact()
+	TearDown(compactBars)
 	for i = 1, MAX_PARTY_MEMBERS do
 		local frame = _G["PartyMemberFrame" .. i]
 		local unit = "party" .. i
 		if frame and UnitExists(unit) then
 			if not regularBars[i] then
-				local bar = addon.CreateCastbar(frame, unit, baseW, baseH)
-				bar:SetPoint("BOTTOM", frame, "TOP", 18, -8)
-				bar:SetFrameLevel(frame:GetFrameLevel() + 3)
-				regularBars[i] = bar
+				regularBars[i] = addon.BuildPartyRegularBar(frame, unit)
 			end
-			CastingBarFrame_SetUnit(regularBars[i], unit)
-			if UnitCastingInfo(unit) or UnitChannelInfo(unit) then
-				CastingBarFrame_OnEvent(regularBars[i], "PLAYER_ENTERING_WORLD")
-			end
+			addon.AttachBar(regularBars[i], unit)
 		elseif regularBars[i] then
 			CastingBarFrame_SetUnit(regularBars[i], nil)
 		end
@@ -41,21 +53,16 @@ local function SetupRegular()
 end
 
 local function SetupCompact()
-	TearDownRegular()
+	TearDown(regularBars)
 	for i = 1, MAX_RAID_MEMBERS do
 		local frame = _G["CompactRaidFrame" .. i]
 		if not frame then break end
 		local unit = frame.unit
 		if unit and UnitExists(unit) then
 			if not compactBars[unit] then
-				local bar = addon.CreateCastbar(frame, unit, baseW, baseH)
-				bar:SetPoint("CENTER")
-				compactBars[unit] = bar
+				compactBars[unit] = addon.BuildPartyCompactBar(frame, unit)
 			end
-			CastingBarFrame_SetUnit(compactBars[unit], unit)
-			if UnitCastingInfo(unit) or UnitChannelInfo(unit) then
-				CastingBarFrame_OnEvent(compactBars[unit], "PLAYER_ENTERING_WORLD")
-			end
+			addon.AttachBar(compactBars[unit], unit)
 		end
 	end
 end
@@ -66,10 +73,6 @@ f:RegisterEvent("GROUP_ROSTER_UPDATE")
 f:RegisterEvent("CVAR_UPDATE")
 f:SetScript("OnEvent", function(_, event, cvar)
 	if event == "CVAR_UPDATE" and cvar ~= "useCompactPartyFrames" then return end
-	if not baseW then
-		local hp = PartyMemberFrame1HealthBar
-		baseW, baseH = hp:GetWidth(), hp:GetHeight()
-	end
 	if GetCVarBool("useCompactPartyFrames") then
 		SetupCompact()
 	else

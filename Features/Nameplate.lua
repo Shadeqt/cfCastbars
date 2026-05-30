@@ -1,6 +1,7 @@
 local _, addon = ...
 
 local bars = {}
+addon.nameplateBars = bars  -- exposed for the /cfcb test harness
 
 local function SetupCastbar(plate, unit)
 	local hp = plate.UnitFrame.healthBar
@@ -15,10 +16,7 @@ local function SetupCastbar(plate, unit)
 	end
 	bar:ClearAllPoints()
 	bar:SetPoint("TOP", hp, "BOTTOM", 0, -5)
-	CastingBarFrame_SetUnit(bar, unit)
-	if UnitCastingInfo(unit) or UnitChannelInfo(unit) then
-		CastingBarFrame_OnEvent(bar, "PLAYER_ENTERING_WORLD")
-	end
+	addon.AttachBar(bar, unit)
 end
 
 local f = CreateFrame("Frame")

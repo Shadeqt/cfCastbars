@@ -18,14 +18,13 @@ function addon.CreateCastbar(parent, unit, width, height)
 	local sw = width / TEMPLATE_BAR_W
 	local sh = height / TEMPLATE_BAR_H
 
-	bar.Border:ClearAllPoints()
-	bar.Border:SetSize(TEMPLATE_BORDER_W * sw, TEMPLATE_BORDER_H * sh)
-	bar.Border:SetPoint("TOP", bar, "TOP", 0, TEMPLATE_BORDER_Y * sh)
+	local borderW, borderH, borderY = TEMPLATE_BORDER_W * sw, TEMPLATE_BORDER_H * sh, TEMPLATE_BORDER_Y * sh
+	for _, region in ipairs({ bar.Border, bar.Flash }) do
+		region:ClearAllPoints()
+		region:SetSize(borderW, borderH)
+		region:SetPoint("TOP", bar, "TOP", 0, borderY)
+	end
 	bar.Border:SetDrawLayer("OVERLAY")
-
-	bar.Flash:ClearAllPoints()
-	bar.Flash:SetSize(TEMPLATE_BORDER_W * sw, TEMPLATE_BORDER_H * sh)
-	bar.Flash:SetPoint("TOP", bar, "TOP", 0, TEMPLATE_BORDER_Y * sh)
 
 	bar.Spark:SetSize(TEMPLATE_SPARK * sh, TEMPLATE_SPARK * sh)
 
@@ -35,18 +34,21 @@ function addon.CreateCastbar(parent, unit, width, height)
 
 	bar:HookScript("OnShow", function(self) self.Icon:Show() end)
 
-	bar:HookScript("OnEvent", function(self, event)
-		if event == "UNIT_SPELLCAST_START" or event == "UNIT_SPELLCAST_CHANNEL_START" then
-			CastingBarFrame_OnEvent(self, "PLAYER_ENTERING_WORLD")
-		end
-	end)
-
 	table.insert(addon.createdBars, bar)
 	if addon._initialTexture then
 		bar:SetStatusBarTexture(addon._initialTexture)
 	end
 
 	return bar
+end
+
+-- Bind a created bar to a unit and immediately paint any in-progress cast
+-- (the PLAYER_ENTERING_WORLD event forces CastingBarFrame to repopulate state).
+function addon.AttachBar(bar, unit)
+	CastingBarFrame_SetUnit(bar, unit)
+	if UnitCastingInfo(unit) or UnitChannelInfo(unit) then
+		CastingBarFrame_OnEvent(bar, "PLAYER_ENTERING_WORLD")
+	end
 end
 
 local initial = CastingBarFrame:GetStatusBarTexture()

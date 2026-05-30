@@ -10,3 +10,5 @@ Features\Player.lua
 Features\Pet.lua
 Features\Party.lua
 Features\Nameplate.lua
+
+Features\Test.lua
