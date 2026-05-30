@@ -3,28 +3,13 @@ local _, addon = ...
 addon.partyBars = {}           -- regular-frame bars, also reused by the test harness
 local regularBars = addon.partyBars
 local compactBars = {}
-local baseW, baseH
 
-local function EnsureBase()
-	if not baseW then
-		local hp = PartyMemberFrame1HealthBar
-		baseW, baseH = hp:GetWidth(), hp:GetHeight()
-	end
-end
-
--- Build + place a party castbar. Single source of truth for party bar
--- geometry, shared by the production event handler and the /cfcb test harness.
-function addon.BuildPartyRegularBar(frame, unit)
-	EnsureBase()
-	local bar = addon.CreateCastbar(frame, unit, baseW * 1.25, baseH)
-	bar:SetPoint("TOP", frame, "BOTTOM", 10, 0)
-	bar:SetFrameLevel(frame:GetFrameLevel() + 3)
-	return bar
-end
-
+-- Build + place a compact-frame party castbar, centered on the compact frame.
+-- Shared by the production event handler and the /cfcb test harness.
 function addon.BuildPartyCompactBar(frame, unit)
-	EnsureBase()
-	local bar = addon.CreateCastbar(frame, unit, baseW, baseH)
+	local hp = frame.healthBar
+	local bar = addon.CreateCastbar(frame, unit, hp:GetWidth(), hp:GetHeight())
+	bar.hp = hp
 	bar:SetPoint("CENTER")
 	return bar
 end
@@ -43,7 +28,7 @@ local function SetupRegular()
 		local unit = "party" .. i
 		if frame and UnitExists(unit) then
 			if not regularBars[i] then
-				regularBars[i] = addon.BuildPartyRegularBar(frame, unit)
+				regularBars[i] = addon.BuildUnitBar(frame, unit)
 			end
 			addon.AttachBar(regularBars[i], unit)
 		elseif regularBars[i] then

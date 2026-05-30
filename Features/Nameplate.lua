@@ -14,6 +14,7 @@ local function SetupCastbar(plate, unit)
 		bar.Icon:SetPoint("LEFT", bar, "RIGHT", 3, 0)
 		bars[unit] = bar
 	end
+	bar.hp = hp  -- recycled plates reuse the bar; keep it pointed at the live health bar
 	bar:ClearAllPoints()
 	bar:SetPoint("TOP", hp, "BOTTOM", 0, -5)
 	addon.AttachBar(bar, unit)

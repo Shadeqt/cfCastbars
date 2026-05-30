@@ -1,7 +1,5 @@
 local _, addon = ...
 
-addon.createdBars = {}
-
 local TEMPLATE_BAR_W = 150
 local TEMPLATE_BAR_H = 10
 local TEMPLATE_BORDER_W = 196
@@ -32,12 +30,17 @@ function addon.CreateCastbar(parent, unit, width, height)
 	bar.Icon:SetSize(height * 1.5, height * 1.5)
 	bar.Icon:SetPoint("RIGHT", bar, "LEFT", -5 * sw, 0)
 
-	bar:HookScript("OnShow", function(self) self.Icon:Show() end)
-
-	table.insert(addon.createdBars, bar)
-	if addon._initialTexture then
-		bar:SetStatusBarTexture(addon._initialTexture)
-	end
+	-- Mirror the unit's own health-bar texture each time the bar shows (the
+	-- feature sets bar.hp), so it matches its frame no matter who/how/when the
+	-- texture changed -- the next cast always re-reads the live value.
+	bar:HookScript("OnShow", function(self)
+		self.Icon:Show()
+		local t = self.hp and self.hp:GetStatusBarTexture()
+		if not t then return end
+		local r, g, b, a = self:GetStatusBarColor()  -- SetStatusBarTexture clears color
+		self:SetStatusBarTexture(t:GetTexture())
+		self:SetStatusBarColor(r, g, b, a)
+	end)
 
 	return bar
 end
@@ -51,14 +54,13 @@ function addon.AttachBar(bar, unit)
 	end
 end
 
-local initial = CastingBarFrame:GetStatusBarTexture()
-if initial then
-	addon._initialTexture = initial:GetTexture()
+-- Build a castbar hanging below a unit frame (pet, regular party): 1.25x the
+-- frame's health-bar width, raised above the frame, following its HP texture.
+function addon.BuildUnitBar(frame, unit)
+	local hp = _G[frame:GetName() .. "HealthBar"]
+	local bar = addon.CreateCastbar(frame, unit, hp:GetWidth() * 1.25, hp:GetHeight())
+	bar.hp = hp
+	bar:SetPoint("TOP", frame, "BOTTOM", 10, 0)
+	bar:SetFrameLevel(frame:GetFrameLevel() + 3)
+	return bar
 end
-
-hooksecurefunc(CastingBarFrame, "SetStatusBarTexture", function(_, tex)
-	addon._initialTexture = tex
-	for _, bar in ipairs(addon.createdBars) do
-		bar:SetStatusBarTexture(tex)
-	end
-end)
