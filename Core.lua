@@ -7,6 +7,43 @@ local TEMPLATE_BORDER_H = 49
 local TEMPLATE_BORDER_Y = 20
 local TEMPLATE_SPARK = 32
 
+-- DarkMode following. Dark mode is not surface-backed, so we read its state off CastingBarFrame.Border
+-- -- cfFrames darkens it to ~0.25; with no cfFrames it stays 1,1,1 and everything here is a no-op. We
+-- mirror that tint onto our own bar borders and give our icons the same zoom + dark backdrop that
+-- cfFrames' DarkModeIcons gives Blizzard icons (replicated here -- consumers can't call into cfFrames).
+local ICON_ZOOM = { 0.02, 0.98, 0.02, 0.98 }
+local ICON_OFFSET = { -1.2, 1.2, 1.2, -1.2 }
+
+local function StyleDarkIcon(frame, r, g, b)
+	local icon = frame.Icon
+	if not icon then return end
+	if not frame.cffZoom then
+		frame.cffZoom = true
+		icon:SetTexCoord(unpack(ICON_ZOOM))
+	end
+	if not frame.cffIconBorder then
+		local border = CreateFrame("Frame", nil, frame, "BackdropTemplate")
+		border:SetBackdrop({ edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 8.5 })
+		border:SetPoint("TOPLEFT", icon, ICON_OFFSET[1], ICON_OFFSET[2])
+		border:SetPoint("BOTTOMRIGHT", icon, ICON_OFFSET[3], ICON_OFFSET[4])
+		frame.cffIconBorder = border
+	end
+	frame.cffIconBorder:SetBackdropBorderColor(r, g, b, 1)
+	frame.cffIconBorder:Show()
+end
+
+-- ownBorder: mirror the tint onto the bar's own Border (our created pet/party/nameplate bars). The
+-- player castbar's border is darkened by cfFrames itself, so Player.lua passes false and only its
+-- icon is styled here. Called from each bar's OnShow, so it follows the live dark-mode state.
+function addon.FollowDarkMode(bar, ownBorder)
+	local r, g, b = CastingBarFrame.Border:GetVertexColor()
+	if ownBorder then
+		bar.Border:SetVertexColor(r, g, b)
+		if bar.BorderShield then bar.BorderShield:SetVertexColor(r, g, b) end
+	end
+	if r < 0.9 then StyleDarkIcon(bar, r, g, b) end  -- dark mode on
+end
+
 function addon.CreateCastbar(parent, unit, width, height)
 	local bar = CreateFrame("StatusBar", nil, parent, "SmallCastingBarFrameTemplate")
 	bar:Hide()
@@ -35,6 +72,7 @@ function addon.CreateCastbar(parent, unit, width, height)
 	-- texture changed -- the next cast always re-reads the live value.
 	bar:HookScript("OnShow", function(self)
 		self.Icon:Show()
+		addon.FollowDarkMode(self, true)  -- mirror cfFrames' dark-mode tint onto our border + icon
 		local t = self.hp and self.hp:GetStatusBarTexture()
 		if not t then return end
 		local r, g, b, a = self:GetStatusBarColor()  -- SetStatusBarTexture clears color
