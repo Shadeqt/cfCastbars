@@ -56,7 +56,9 @@ function addon.CreateCastbar(parent, unit, width, height)
 	local borderW, borderH, borderY = TEMPLATE_BORDER_W * sw, TEMPLATE_BORDER_H * sh, TEMPLATE_BORDER_Y * sh
 	for _, region in ipairs({ bar.Border, bar.Flash }) do
 		region:ClearAllPoints()
-		region:SetSize(borderW, borderH)
+		-- +2 (1px per side) nudges the centred border out past a sub-pixel
+		-- rounding seam where the fill would otherwise bleed over the frame
+		region:SetSize(borderW + 2, borderH)
 		region:SetPoint("TOP", bar, "TOP", 0, borderY)
 	end
 	bar.Border:SetDrawLayer("OVERLAY")
