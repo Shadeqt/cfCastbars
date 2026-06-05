@@ -29,7 +29,9 @@ local function StyleDarkIcon(frame, r, g, b)
 		frame.cffIconBorder = border
 	end
 	frame.cffIconBorder:SetBackdropBorderColor(r, g, b, 1)
-	frame.cffIconBorder:Show()
+	-- Only show the border when the icon actually has a texture. Loot/opening/herbing
+	-- casts have no spell icon, so the slot is empty and a border would float over nothing.
+	frame.cffIconBorder:SetShown(icon:GetTexture() ~= nil)
 end
 
 -- ownBorder: mirror the tint onto the bar's own Border (our created pet/party/nameplate bars). The
@@ -73,7 +75,22 @@ function addon.CreateCastbar(parent, unit, width, height)
 	-- feature sets bar.hp), so it matches its frame no matter who/how/when the
 	-- texture changed -- the next cast always re-reads the live value.
 	bar:HookScript("OnShow", function(self)
-		self.Icon:Show()
+		-- Blizzard's CastingBarFrame_OnShow (the template's OnShow) recomputes
+		-- self.value from the *unit-less* CastingInfo()/ChannelInfo(), which are
+		-- the PLAYER's cast -- not self.unit's. On a non-player bar that corrupts
+		-- the fill with the player's own cast progress whenever the player is
+		-- mid-cast, so the unit's bar starts partway full and finishes early. This
+		-- hook runs right after that OnShow, so re-derive value from our real unit.
+		if self.unit and self.unit ~= "player" then
+			if self.casting then
+				local _, _, _, startTime = UnitCastingInfo(self.unit)
+				if startTime then self.value = GetTime() - (startTime / 1000) end
+			elseif self.channeling then
+				local _, _, _, _, endTime = UnitChannelInfo(self.unit)
+				if endTime then self.value = (endTime / 1000) - GetTime() end
+			end
+		end
+		self.Icon:SetShown(self.Icon:GetTexture() ~= nil)
 		addon.FollowDarkMode(self, true)  -- mirror cfFrames' dark-mode tint onto our border + icon
 		local t = self.hp and self.hp:GetStatusBarTexture()
 		if not t then return end
