@@ -1,24 +1,21 @@
 local _, addon = ...
 
-local bar = CastingBarFrame
-local size = bar:GetHeight() * 2
-bar.Icon:SetSize(size, size)
-bar.Icon:ClearAllPoints()
-bar.Icon:SetPoint("RIGHT", bar, "LEFT", -10, 3)
+-- Restyle Blizzard's own player castbar (CastingBarFrame); we don't build it. Re-place its icon and
+-- re-fit its shield through the shared placers, and follow dark mode on the icon only (cfFrames darkens
+-- the player castbar's own border). Blizzard re-anchors the icon/shield when the bar shows, so we
+-- re-assert on every Show.
 
--- Icon-only: cfFrames owns (darkens) the player castbar's border; we own this icon (we resized it),
--- so we give it the same dark zoom + backdrop. false = don't touch the border.
+-- Player overrides: x = -7 and a fixed y = 3 (not shield-aware, unlike the small-template bars).
+local function PinIcon(bar)
+	addon.SetCastbarIcon(bar, -7, 3)
+end
+
+local bar = CastingBarFrame
+PinIcon(bar)
 hooksecurefunc(bar, "Show", function(self)
-	-- Textureless casts (loot/opening/herbing) have no spell icon; keep the slot hidden then.
-	self.Icon:SetShown(self.Icon:GetTexture() ~= nil)
-	-- Blizzard places the player BorderShield too high and too far right for our
-	-- restyled bar; pin it to the (correctly placed) normal border's box so it lands
-	-- like the shield on our other castbars.
-	if self.BorderShield then
-		self.BorderShield:ClearAllPoints()
-		-- Match the border box, nudged 2px left and 1px down to line up the shield art.
-		self.BorderShield:SetPoint("TOPLEFT", self.Border, "TOPLEFT", -10, -1)
-		self.BorderShield:SetPoint("BOTTOMRIGHT", self.Border, "BOTTOMRIGHT", -10, -1)
-	end
-	addon.FollowDarkMode(self, false)
+	PinIcon(self)
+	addon.ApplyIconVisuals(self)
+	-- Re-fit the shield to the restyled bar's box (Blizzard re-anchors it on show, like the icon).
+	addon.SetCastbarShield(self, -7, -1)
+	addon.FollowDarkMode(self, false)  -- icon only; cfFrames darkens the player castbar border
 end)

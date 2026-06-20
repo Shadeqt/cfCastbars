@@ -1,16 +1,20 @@
 local _, addon = ...
 
-local TEMPLATE_BAR_W = 150
-local TEMPLATE_BAR_H = 10
-local TEMPLATE_BORDER_W = 196
-local TEMPLATE_BORDER_H = 49
-local TEMPLATE_BORDER_Y = 20
-local TEMPLATE_SPARK = 32
+-- Castbar construction, based on cfFramesTest's newest model: build from Blizzard's SmallCastingBarFrame
+-- template and keep it close to native -- border, shield, spark and text keep the template's own
+-- anchors/layers/textures, and the consumer applies a uniform SetScale (0.6 pet/party, 0.8 nameplate)
+-- so the template's fixed-size art keeps its fit. The icon is the exception: the template doesn't place
+-- it on a generic instance, so we place it ourselves (SetCastbarIcon), shield-aware.
+--
+-- What stays cfCastbars-specific (NOT cfFramesTest's cross-addon APIs -- zero cross-addon comms):
+--   * texture  -> mirror the unit's own HP-bar texture each Show (bar.hp), set by each driver.
+--   * darkmode -> observe CastingBarFrame.Border's vertex color (FollowDarkMode); replicate cfFrames'
+--                 dark icon border locally (StyleDarkIcon). cfCastbars never calls into cfFrames.
+--   * shield   -> the uninterruptible trigger lives in Shield.lua + Data.lua (cfFramesTest had none).
 
--- DarkMode following. Dark mode is not surface-backed, so we read its state off CastingBarFrame.Border
--- -- cfFrames darkens it to ~0.25; with no cfFrames it stays 1,1,1 and everything here is a no-op. We
--- mirror that tint onto our own bar borders and give our icons the same zoom + dark backdrop that
--- cfFrames' DarkModeIcons gives Blizzard icons (replicated here -- consumers can't call into cfFrames).
+-- Dark icon border: replicate cfFrames' DarkModeIcons zoom + backdrop on our own icons. A created border
+-- has no shared surface to observe, so the construction is duplicated (bounded); only the COLOR comes
+-- from the observed surface (FollowDarkMode passes it in).
 local ICON_ZOOM = { 0.02, 0.98, 0.02, 0.98 }
 local ICON_OFFSET = { -1.2, 1.2, 1.2, -1.2 }
 
@@ -29,14 +33,14 @@ local function StyleDarkIcon(frame, r, g, b)
 		frame.cffIconBorder = border
 	end
 	frame.cffIconBorder:SetBackdropBorderColor(r, g, b, 1)
-	-- Only show the border when the icon actually has a texture. Loot/opening/herbing
-	-- casts have no spell icon, so the slot is empty and a border would float over nothing.
+	-- Only show the border when the icon actually has a texture (loot/herb/open casts have none).
 	frame.cffIconBorder:SetShown(icon:GetTexture() ~= nil)
 end
 
--- ownBorder: mirror the tint onto the bar's own Border (our created pet/party/nameplate bars). The
--- player castbar's border is darkened by cfFrames itself, so Player.lua passes false and only its
--- icon is styled here. Called from each bar's OnShow, so it follows the live dark-mode state.
+-- Follow dark mode by OBSERVING CastingBarFrame.Border's vertex color: cfFrames darkens it to ~0.25;
+-- with no cfFrames it stays 1,1,1 and this is a no-op. ownBorder=true also tints the bar's own
+-- Border/BorderShield (our built pet/party/nameplate bars). The player + target bars' borders are
+-- darkened by cfFrames itself, so they pass false (icon only). Called from each bar's Show.
 function addon.FollowDarkMode(bar, ownBorder)
 	local r, g, b = CastingBarFrame.Border:GetVertexColor()
 	if ownBorder then
@@ -46,58 +50,48 @@ function addon.FollowDarkMode(bar, ownBorder)
 	if r < 0.9 then StyleDarkIcon(bar, r, g, b) end  -- dark mode on
 end
 
-function addon.CreateCastbar(parent, unit, width, height)
+-- Place a castbar's spell icon: ~1.6x bar height, just left of the bar, shield-aware rise. A no-arg call
+-- gives the small-template default (x=-5, y rides the active border: +2 with the shield, flush otherwise).
+-- The player bar (larger CastingBarFrame) overrides x/y. Called on Show and whenever SetShield swaps the
+-- border (via bar.cffOnShield).
+function addon.SetCastbarIcon(bar, x, y)
+	local s = bar:GetHeight() * 1.6
+	local rise = (bar.BorderShield and bar.BorderShield:IsShown()) and 2 or 0
+	bar.Icon:ClearAllPoints()
+	bar.Icon:SetSize(s, s)
+	bar.Icon:SetPoint("RIGHT", bar, "LEFT", x or -5, y or rise)
+end
+
+-- Re-fit the shield border to the bar's box, offset by x/y (Blizzard's native anchor can miss a restyled
+-- bar). Only the player bar needs it; the small-template bars leave the shield native.
+function addon.SetCastbarShield(bar, x, y)
+	if not bar.BorderShield then return end
+	bar.BorderShield:ClearAllPoints()
+	bar.BorderShield:SetPoint("TOPLEFT", bar.Border, "TOPLEFT", x, y)
+	bar.BorderShield:SetPoint("BOTTOMRIGHT", bar.Border, "BOTTOMRIGHT", x, y)
+end
+
+-- Per-cast icon visibility: the icon texture changes per cast and is empty on textureless casts. The
+-- dark-icon border show/hide is handled inside StyleDarkIcon (via FollowDarkMode); here we just toggle
+-- the icon itself. Shared with the player/target bars, which restyle Blizzard frames the same way.
+function addon.ApplyIconVisuals(bar)
+	bar.Icon:SetShown(bar.Icon:GetTexture() ~= nil)
+end
+
+function addon.CreateCastbar(parent)
 	local bar = CreateFrame("StatusBar", nil, parent, "SmallCastingBarFrameTemplate")
 	bar:Hide()
-	CastingBarFrame_OnLoad(bar, unit)
-	bar:SetSize(width, height)
+	-- No unit: built unit-agnostic; the driver binds it via addon.AttachBar (registers cast events).
+	CastingBarFrame_OnLoad(bar)
 
-	local sw = width / TEMPLATE_BAR_W
-	local sh = height / TEMPLATE_BAR_H
+	-- Let SetShield re-place the icon when it swaps the border (icon Y differs per border).
+	bar.cffOnShield = addon.SetCastbarIcon
 
-	local borderW, borderH, borderY = TEMPLATE_BORDER_W * sw, TEMPLATE_BORDER_H * sh, TEMPLATE_BORDER_Y * sh
-	for _, region in ipairs({ bar.Border, bar.Flash }) do
-		region:ClearAllPoints()
-		-- +2 (1px per side) nudges the centred border out past a sub-pixel
-		-- rounding seam where the fill would otherwise bleed over the frame
-		region:SetSize(borderW + 2, borderH)
-		region:SetPoint("TOP", bar, "TOP", 0, borderY)
-	end
-	bar.Border:SetDrawLayer("OVERLAY")
-
-	-- Shield border for uninterruptible casts (Shield.lua swaps it in for Border).
-	-- Starts on the same box as the border, one layer above it; the shield art is
-	-- asymmetric so the placement may want tuning in-game.
-	if bar.BorderShield then
-		bar.BorderShield:SetTexture("Interface\\CastingBar\\UI-CastingBar-Small-Shield")
-		bar.BorderShield:ClearAllPoints()
-		bar.BorderShield:SetSize(borderW + 2, borderH)
-		bar.BorderShield:SetPoint("TOP", bar, "TOP", -2 * sw, borderY)
-		bar.BorderShield:SetDrawLayer("OVERLAY", 1)
-		bar.BorderShield:Hide()
-	end
-
-	-- We pushed Border up to OVERLAY (above), which on our own bars would cover the
-	-- template's spell-name text (it sits on ARTWORK). Lift the text above both
-	-- borders so it stays readable -- matching how player/target bars already look.
-	if bar.Text then bar.Text:SetDrawLayer("OVERLAY", 2) end
-
-	bar.Spark:SetSize(TEMPLATE_SPARK * sh, TEMPLATE_SPARK * sh)
-
-	bar.Icon:ClearAllPoints()
-	bar.Icon:SetSize(height * 1.5, height * 1.5)
-	bar.Icon:SetPoint("RIGHT", bar, "LEFT", -3 * sw, 1.5 * sh)
-
-	-- Mirror the unit's own health-bar texture each time the bar shows (the
-	-- feature sets bar.hp), so it matches its frame no matter who/how/when the
-	-- texture changed -- the next cast always re-reads the live value.
 	bar:HookScript("OnShow", function(self)
-		-- Blizzard's CastingBarFrame_OnShow (the template's OnShow) recomputes
-		-- self.value from the *unit-less* CastingInfo()/ChannelInfo(), which are
-		-- the PLAYER's cast -- not self.unit's. On a non-player bar that corrupts
-		-- the fill with the player's own cast progress whenever the player is
-		-- mid-cast, so the unit's bar starts partway full and finishes early. This
-		-- hook runs right after that OnShow, so re-derive value from our real unit.
+		-- Blizzard's CastingBarFrame_OnShow recomputes self.value from the *unit-less*
+		-- CastingInfo()/ChannelInfo() -- the PLAYER's cast, not self.unit's. On a non-player bar that
+		-- corrupts the fill with the player's progress whenever the player is mid-cast, so the unit's
+		-- bar starts partway full and finishes early. Re-derive value from our real unit.
 		if self.unit and self.unit ~= "player" then
 			if self.casting then
 				local _, _, _, startTime = UnitCastingInfo(self.unit)
@@ -107,15 +101,19 @@ function addon.CreateCastbar(parent, unit, width, height)
 				if endTime then self.value = (endTime / 1000) - GetTime() end
 			end
 		end
-		self.Icon:SetShown(self.Icon:GetTexture() ~= nil)
-		-- Default to no shield on every show; the cast-start hook re-shows it if
-		-- the cast turns out uninterruptible. Keeps recycled bars from inheriting
-		-- a previous unit's shield when shown without a fresh cast-start event.
+
+		addon.ApplyIconVisuals(self)
+		-- Default to no shield on every show; the cast-start trigger (Shield.lua) re-shows it if the
+		-- cast is uninterruptible. Keeps recycled bars from inheriting a previous unit's shield.
 		if addon.SetShield then addon.SetShield(self, false) end
-		addon.FollowDarkMode(self, true)  -- mirror cfFrames' dark-mode tint onto our border + icon
+		addon.SetCastbarIcon(self)  -- re-asserted each show (Blizzard re-anchors the icon on cast-start)
+		addon.FollowDarkMode(self, true)  -- observe cfFrames' dark-mode tint -> our border + icon
+
+		-- Mirror the unit's own HP-bar texture (driver sets self.hp); re-apply color afterwards since
+		-- SetStatusBarTexture clears it. Surface observation -- matches whoever skinned that frame.
 		local t = self.hp and self.hp:GetStatusBarTexture()
 		if not t then return end
-		local r, g, b, a = self:GetStatusBarColor()  -- SetStatusBarTexture clears color
+		local r, g, b, a = self:GetStatusBarColor()
 		self:SetStatusBarTexture(t:GetTexture())
 		self:SetStatusBarColor(r, g, b, a)
 	end)
@@ -123,22 +121,11 @@ function addon.CreateCastbar(parent, unit, width, height)
 	return bar
 end
 
--- Bind a created bar to a unit and immediately paint any in-progress cast
--- (the PLAYER_ENTERING_WORLD event forces CastingBarFrame to repopulate state).
+-- Bind a created bar to a unit and immediately paint any in-progress cast (PLAYER_ENTERING_WORLD forces
+-- CastingBarFrame to repopulate state).
 function addon.AttachBar(bar, unit)
 	CastingBarFrame_SetUnit(bar, unit)
 	if UnitCastingInfo(unit) or UnitChannelInfo(unit) then
 		CastingBarFrame_OnEvent(bar, "PLAYER_ENTERING_WORLD")
 	end
-end
-
--- Build a castbar hanging below a unit frame (pet, regular party): 1.25x the
--- frame's health-bar width, raised above the frame, following its HP texture.
-function addon.BuildUnitBar(frame, unit)
-	local hp = _G[frame:GetName() .. "HealthBar"]
-	local bar = addon.CreateCastbar(frame, unit, hp:GetWidth() * 1.4, hp:GetHeight())
-	bar.hp = hp
-	bar:SetPoint("TOP", frame, "BOTTOM", 5, 0)
-	bar:SetFrameLevel(frame:GetFrameLevel() + 3)
-	return bar
 end

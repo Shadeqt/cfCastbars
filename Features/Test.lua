@@ -104,7 +104,7 @@ local function ShowAll()
 
 	-- Pet frame + pet castbar (reuse the production bar; build it if absent).
 	ForceShow(PetFrame)
-	if not addon.petBar then addon.petBar = addon.BuildUnitBar(PetFrame, "pet") end
+	addon.EnsurePetBar()
 	FakeCast(addon.petBar)
 
 	-- Party frames + party castbars (reuse the production bars; build if absent).
@@ -112,9 +112,7 @@ local function ShowAll()
 		local frame = _G["PartyMemberFrame" .. i]
 		if frame then
 			ForceShow(frame)
-			if not addon.partyBars[i] then
-				addon.partyBars[i] = addon.BuildUnitBar(frame, "party" .. i)
-			end
+			addon.EnsurePartyBar(i)
 			FakeCast(addon.partyBars[i])
 		end
 	end

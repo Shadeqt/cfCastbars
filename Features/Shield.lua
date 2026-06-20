@@ -15,6 +15,9 @@ function addon.SetShield(bar, on)
 		bar.BorderShield:Hide()
 		bar.Border:Show()
 	end
+	-- The active border changed, so the icon's shield-aware rise may differ -- re-place it.
+	-- No-op unless the bar opted in (bar.cffOnShield = SetCastbarIcon, set in CreateCastbar / Target).
+	if bar.cffOnShield then bar.cffOnShield(bar) end
 end
 
 -- Can the unit's current cast/channel not be interrupted? eventSpellID is the

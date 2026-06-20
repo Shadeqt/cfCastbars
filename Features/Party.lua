@@ -1,17 +1,34 @@
 local _, addon = ...
 
-addon.partyBars = {}           -- regular-frame bars, also reused by the test harness
+addon.partyBars = {}           -- regular-frame bars, keyed by member index; reused by the /cfcb harness
 local regularBars = addon.partyBars
 local compactBars = {}
 
--- Build + place a compact-frame party castbar, centered on the compact frame.
--- Shared by the production event handler and the /cfcb test harness.
-function addon.BuildPartyCompactBar(frame, unit)
-	local hp = frame.healthBar
-	local bar = addon.CreateCastbar(frame, unit, hp:GetWidth(), hp:GetHeight())
-	bar.hp = hp
-	bar:SetPoint("CENTER")
-	return bar
+-- Regular-frame party castbar: built once, hung below the frame, scaled to 0.6. bar.hp -> the member's
+-- health bar so the fill mirrors its texture each Show.
+local function EnsureRegularBar(i)
+	if not regularBars[i] then
+		local frame = _G["PartyMemberFrame" .. i]
+		local bar = addon.CreateCastbar(frame)
+		bar:SetScale(0.6)
+		bar:SetPoint("TOP", frame, "BOTTOM", 5, 0)
+		bar.hp = _G["PartyMemberFrame" .. i .. "HealthBar"]
+		regularBars[i] = bar
+	end
+	return regularBars[i]
+end
+addon.EnsurePartyBar = EnsureRegularBar
+
+-- Compact-frame party castbar: built once, centered on the frame, scaled to 0.6.
+local function EnsureCompactBar(unit, frame)
+	if not compactBars[unit] then
+		local bar = addon.CreateCastbar(frame)
+		bar:SetScale(0.6)
+		bar:SetPoint("CENTER")
+		bar.hp = frame.healthBar
+		compactBars[unit] = bar
+	end
+	return compactBars[unit]
 end
 
 local function TearDown(t)
@@ -27,9 +44,7 @@ local function SetupRegular()
 		local frame = _G["PartyMemberFrame" .. i]
 		local unit = "party" .. i
 		if frame and UnitExists(unit) then
-			if not regularBars[i] then
-				regularBars[i] = addon.BuildUnitBar(frame, unit)
-			end
+			EnsureRegularBar(i)
 			addon.AttachBar(regularBars[i], unit)
 		elseif regularBars[i] then
 			CastingBarFrame_SetUnit(regularBars[i], nil)
@@ -44,9 +59,7 @@ local function SetupCompact()
 		if not frame then break end
 		local unit = frame.unit
 		if unit and UnitExists(unit) then
-			if not compactBars[unit] then
-				compactBars[unit] = addon.BuildPartyCompactBar(frame, unit)
-			end
+			EnsureCompactBar(unit, frame)
 			addon.AttachBar(compactBars[unit], unit)
 		end
 	end

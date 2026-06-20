@@ -1,13 +1,14 @@
 ## Interface: 11508
 ## Title:     cfCastbars
-## Notes:     Castbar overlays on player/pet/party/nameplate
+## Notes:     Castbar overlays on player/target/pet/party/nameplate
 ## Author:    Cowfoot
-## Version:   2.0
+## Version:   2.1
 
 Core.lua
 Data.lua
 
 Features\Player.lua
+Features\Target.lua
 Features\Pet.lua
 Features\Party.lua
 Features\Nameplate.lua
