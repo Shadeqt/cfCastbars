@@ -65,11 +65,28 @@ function addon.CreateCastbar(parent, unit, width, height)
 	end
 	bar.Border:SetDrawLayer("OVERLAY")
 
+	-- Shield border for uninterruptible casts (Shield.lua swaps it in for Border).
+	-- Starts on the same box as the border, one layer above it; the shield art is
+	-- asymmetric so the placement may want tuning in-game.
+	if bar.BorderShield then
+		bar.BorderShield:SetTexture("Interface\\CastingBar\\UI-CastingBar-Small-Shield")
+		bar.BorderShield:ClearAllPoints()
+		bar.BorderShield:SetSize(borderW + 2, borderH)
+		bar.BorderShield:SetPoint("TOP", bar, "TOP", -2 * sw, borderY)
+		bar.BorderShield:SetDrawLayer("OVERLAY", 1)
+		bar.BorderShield:Hide()
+	end
+
+	-- We pushed Border up to OVERLAY (above), which on our own bars would cover the
+	-- template's spell-name text (it sits on ARTWORK). Lift the text above both
+	-- borders so it stays readable -- matching how player/target bars already look.
+	if bar.Text then bar.Text:SetDrawLayer("OVERLAY", 2) end
+
 	bar.Spark:SetSize(TEMPLATE_SPARK * sh, TEMPLATE_SPARK * sh)
 
 	bar.Icon:ClearAllPoints()
 	bar.Icon:SetSize(height * 1.5, height * 1.5)
-	bar.Icon:SetPoint("RIGHT", bar, "LEFT", -5 * sw, 0)
+	bar.Icon:SetPoint("RIGHT", bar, "LEFT", -3 * sw, 1.5 * sh)
 
 	-- Mirror the unit's own health-bar texture each time the bar shows (the
 	-- feature sets bar.hp), so it matches its frame no matter who/how/when the
@@ -91,6 +108,10 @@ function addon.CreateCastbar(parent, unit, width, height)
 			end
 		end
 		self.Icon:SetShown(self.Icon:GetTexture() ~= nil)
+		-- Default to no shield on every show; the cast-start hook re-shows it if
+		-- the cast turns out uninterruptible. Keeps recycled bars from inheriting
+		-- a previous unit's shield when shown without a fresh cast-start event.
+		if addon.SetShield then addon.SetShield(self, false) end
 		addon.FollowDarkMode(self, true)  -- mirror cfFrames' dark-mode tint onto our border + icon
 		local t = self.hp and self.hp:GetStatusBarTexture()
 		if not t then return end
@@ -115,9 +136,9 @@ end
 -- frame's health-bar width, raised above the frame, following its HP texture.
 function addon.BuildUnitBar(frame, unit)
 	local hp = _G[frame:GetName() .. "HealthBar"]
-	local bar = addon.CreateCastbar(frame, unit, hp:GetWidth() * 1.25, hp:GetHeight())
+	local bar = addon.CreateCastbar(frame, unit, hp:GetWidth() * 1.4, hp:GetHeight())
 	bar.hp = hp
-	bar:SetPoint("TOP", frame, "BOTTOM", 10, 0)
+	bar:SetPoint("TOP", frame, "BOTTOM", 5, 0)
 	bar:SetFrameLevel(frame:GetFrameLevel() + 3)
 	return bar
 end

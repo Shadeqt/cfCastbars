@@ -5,10 +5,12 @@
 ## Version:   2.0
 
 Core.lua
+Data.lua
 
 Features\Player.lua
 Features\Pet.lua
 Features\Party.lua
 Features\Nameplate.lua
+Features\Shield.lua
 
 Features\Test.lua

@@ -10,7 +10,23 @@ local _, addon = ...
 local FAKE_ICON = "Interface\\Icons\\Spell_Nature_Lightning"
 
 local shown = false
+local testShield = false  -- /cfcb shield: force the shield border on, to tune its art
 local forced = {}  -- frames WE force-showed (only ones hidden when we started)
+-- Force the target castbar below the ToT frame so they don't overlap. The bar is
+-- force-shown without a real cast, so Blizzard keeps re-anchoring it back; the
+-- SetPoint hook (installed once, active only while the preview is up) reasserts our
+-- spot. The `parking` guard stops our own SetPoint from re-triggering the hook.
+local parking = false
+local function ParkSpellbar()
+	if parking or not TargetFrameSpellBar then return end
+	parking = true
+	TargetFrameSpellBar:ClearAllPoints()
+	TargetFrameSpellBar:SetPoint("TOP", TargetFrame, "BOTTOM", -5, -18)
+	parking = false
+end
+if TargetFrameSpellBar then
+	hooksecurefunc(TargetFrameSpellBar, "SetPoint", function() if shown then ParkSpellbar() end end)
+end
 
 -- A plain :Show() doesn't stick on unit-driven frames like PetFrame -- their
 -- visibility gets reasserted by events. Per the archived harness: hook Hide and
@@ -44,6 +60,18 @@ local function FakeCast(bar)
 	if bar.Icon then bar.Icon:SetTexture(FAKE_ICON); bar.Icon:Show() end
 	bar:SetAlpha(1)
 	bar:Show()
+	if addon.SetShield then addon.SetShield(bar, testShield) end
+end
+
+-- Re-apply the shield state to every test bar currently on screen (used when
+-- /cfcb shield is toggled while the preview is already up).
+local function ApplyShields()
+	local function set(bar) if bar and bar:IsShown() and addon.SetShield then addon.SetShield(bar, testShield) end end
+	set(CastingBarFrame)
+	set(TargetFrameSpellBar)
+	set(addon.petBar)
+	for _, bar in pairs(addon.partyBars) do set(bar) end
+	for _, bar in pairs(addon.nameplateBars) do set(bar) end
 end
 
 local function StopCast(bar)
@@ -66,9 +94,13 @@ local function ShowAll()
 	-- Player castbar (Blizzard frame, untouched in production).
 	FakeCast(CastingBarFrame)
 
-	-- Target frame + its castbar. (ToT omitted -- it overlaps the castbar.)
+	-- Target frame + its castbar, plus target-of-target. ToT has no castbar of its
+	-- own (cfCastbars doesn't build one), so it's shown purely for layout context --
+	-- note it sits near the target castbar and the two can overlap.
 	ForceShow(TargetFrame)
 	FakeCast(TargetFrameSpellBar)
+	ForceShow(TargetFrameToT or TargetofTargetFrame)
+	ParkSpellbar()  -- drop the castbar below the ToT, as Blizzard does for a live ToT
 
 	-- Pet frame + pet castbar (reuse the production bar; build it if absent).
 	ForceShow(PetFrame)
@@ -114,9 +146,15 @@ local function HideAll()
 end
 
 SLASH_CFCB1 = "/cfcb"
-SlashCmdList["CFCB"] = function()
+SlashCmdList["CFCB"] = function(msg)
 	if InCombatLockdown() then
 		print("|cff33ff99cfCastbars|r: /cfcb can't toggle in combat.")
+		return
+	end
+	if msg == "shield" then
+		testShield = not testShield
+		if shown then ApplyShields() end
+		print("|cff33ff99cfCastbars|r: test shield " .. (testShield and "ON" or "OFF"))
 		return
 	end
 	if shown then HideAll() else ShowAll() end
