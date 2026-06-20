@@ -12,13 +12,16 @@ local _, addon = ...
 --                 dark icon border locally (StyleDarkIcon). cfCastbars never calls into cfFrames.
 --   * shield   -> the uninterruptible trigger lives in Shield.lua + Data.lua (cfFramesTest had none).
 
--- Dark icon border: replicate cfFrames' DarkModeIcons zoom + backdrop on our own icons. A created border
--- has no shared surface to observe, so the construction is duplicated (bounded); only the COLOR comes
--- from the observed surface (FollowDarkMode passes it in).
+-- Dark icon border: replicate cfFrames' DarkModeIcons look (zoom + backdrop + darkness) on our own icons.
+-- None of it is surface-backed (a created border has no shared surface), so the whole style is a replicated
+-- constant -- including the color: ICON_PRIMARY matches DarkModeIcons' hardcoded 0.25 so castbar icons look
+-- the same as action-bar icons. We OBSERVE the surface only for on/off (FollowDarkMode's r < 0.9 gate); the
+-- chrome's darkness (0.5) is deliberately NOT used here -- icon borders are darker than chrome.
 local ICON_ZOOM = { 0.02, 0.98, 0.02, 0.98 }
 local ICON_OFFSET = { -1.2, 1.2, 1.2, -1.2 }
+local ICON_PRIMARY = 0.25  -- matches cfFrames DarkModeIcons; NOT the DarkMode chrome value (0.5)
 
-local function StyleDarkIcon(frame, r, g, b)
+local function StyleDarkIcon(frame)
 	local icon = frame.Icon
 	if not icon then return end
 	if not frame.cffZoom then
@@ -32,7 +35,7 @@ local function StyleDarkIcon(frame, r, g, b)
 		border:SetPoint("BOTTOMRIGHT", icon, ICON_OFFSET[3], ICON_OFFSET[4])
 		frame.cffIconBorder = border
 	end
-	frame.cffIconBorder:SetBackdropBorderColor(r, g, b, 1)
+	frame.cffIconBorder:SetBackdropBorderColor(ICON_PRIMARY, ICON_PRIMARY, ICON_PRIMARY, 1)
 	-- Only show the border when the icon actually has a texture (loot/herb/open casts have none).
 	frame.cffIconBorder:SetShown(icon:GetTexture() ~= nil)
 end
@@ -44,10 +47,11 @@ end
 function addon.FollowDarkMode(bar, ownBorder)
 	local r, g, b = CastingBarFrame.Border:GetVertexColor()
 	if ownBorder then
+		-- The bar's own border DOES match the chrome darkness (observed r), unlike the icon border.
 		bar.Border:SetVertexColor(r, g, b)
 		if bar.BorderShield then bar.BorderShield:SetVertexColor(r, g, b) end
 	end
-	if r < 0.9 then StyleDarkIcon(bar, r, g, b) end  -- dark mode on
+	if r < 0.9 then StyleDarkIcon(bar) end  -- dark mode on (observed); icon border uses its own fixed darkness
 end
 
 -- Place a castbar's spell icon: ~1.6x bar height, just left of the bar, shield-aware rise. A no-arg call
@@ -109,12 +113,18 @@ function addon.CreateCastbar(parent)
 		addon.SetCastbarIcon(self)  -- re-asserted each show (Blizzard re-anchors the icon on cast-start)
 		addon.FollowDarkMode(self, true)  -- observe cfFrames' dark-mode tint -> our border + icon
 
-		-- Mirror the unit's own HP-bar texture (driver sets self.hp); re-apply color afterwards since
-		-- SetStatusBarTexture clears it. Surface observation -- matches whoever skinned that frame.
+		-- Mirror the unit's own HP-bar texture (driver sets self.hp). SetStatusBarTexture RESETS the
+		-- fill's draw layer (so the fill would draw over the template's border) AND clears its color, so
+		-- capture the layer before the swap and restore it after, and re-apply the color. Surface
+		-- observation -- matches whoever skinned that frame.
 		local t = self.hp and self.hp:GetStatusBarTexture()
 		if not t then return end
+		local oldFill = self:GetStatusBarTexture()
+		local layer, sublevel
+		if oldFill then layer, sublevel = oldFill:GetDrawLayer() end
 		local r, g, b, a = self:GetStatusBarColor()
 		self:SetStatusBarTexture(t:GetTexture())
+		if layer then self:GetStatusBarTexture():SetDrawLayer(layer, sublevel) end
 		self:SetStatusBarColor(r, g, b, a)
 	end)
 
