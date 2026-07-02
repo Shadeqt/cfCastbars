@@ -6,52 +6,34 @@ local _, addon = ...
 -- so the template's fixed-size art keeps its fit. The icon is the exception: the template doesn't place
 -- it on a generic instance, so we place it ourselves (SetCastbarIcon), shield-aware.
 --
--- What stays cfCastbars-specific (NOT cfFramesTest's cross-addon APIs -- zero cross-addon comms):
+-- What stays cfCastbars-specific:
 --   * texture  -> mirror the unit's own HP-bar texture each Show (bar.hp), set by each driver.
---   * darkmode -> observe CastingBarFrame.Border's vertex color (FollowDarkMode); replicate cfFrames'
---                 dark icon border locally (StyleDarkIcon). cfCastbars never calls into cfFrames.
+--   * darkmode -> consume cfDarkMode's public API: its presence is the on/off signal, cfDarkMode.Darken
+--                 tints our own bar borders, cfDarkMode.Style styles the spell icon. nil-checked, so
+--                 cfCastbars still runs standalone (no cfDarkMode = no dark styling, correct: nothing to match).
 --   * shield   -> the uninterruptible trigger lives in Shield.lua + Data.lua (cfFramesTest had none).
 
--- Dark icon border: replicate cfFrames' DarkModeIcons look (zoom + backdrop + darkness) on our own icons.
--- None of it is surface-backed (a created border has no shared surface), so the whole style is a replicated
--- constant -- including the color: ICON_PRIMARY matches DarkModeIcons' hardcoded 0.25 so castbar icons look
--- the same as action-bar icons. We OBSERVE the surface only for on/off (FollowDarkMode's r < 0.9 gate); the
--- chrome's darkness (0.5) is deliberately NOT used here -- icon borders are darker than chrome.
-local ICON_ZOOM = { 0.02, 0.98, 0.02, 0.98 }
-local ICON_OFFSET = { -1.2, 1.2, 1.2, -1.2 }
-local ICON_PRIMARY = 0.25  -- matches cfFrames DarkModeIcons; NOT the DarkMode chrome value (0.5)
-
+-- Dark icon styling: delegate to cfDarkMode.Style so castbar icons share the exact zoom/border/
+-- darkness of action-bar and aura icons. It stores the created border on frame.cffBorder.
 local function StyleDarkIcon(frame)
-	local icon = frame.Icon
-	if not icon then return end
-	if not frame.cffZoom then
-		frame.cffZoom = true
-		icon:SetTexCoord(unpack(ICON_ZOOM))
-	end
-	if not frame.cffIconBorder then
-		local border = CreateFrame("Frame", nil, frame, "BackdropTemplate")
-		border:SetBackdrop({ edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 8.5 })
-		border:SetPoint("TOPLEFT", icon, ICON_OFFSET[1], ICON_OFFSET[2])
-		border:SetPoint("BOTTOMRIGHT", icon, ICON_OFFSET[3], ICON_OFFSET[4])
-		frame.cffIconBorder = border
-	end
-	frame.cffIconBorder:SetBackdropBorderColor(ICON_PRIMARY, ICON_PRIMARY, ICON_PRIMARY, 1)
+	if not cfDarkMode then return end
+	cfDarkMode.Style(frame)
 	-- Only show the border when the icon actually has a texture (loot/herb/open casts have none).
-	frame.cffIconBorder:SetShown(icon:GetTexture() ~= nil)
+	if frame.cffBorder then
+		frame.cffBorder:SetShown(frame.Icon and frame.Icon:GetTexture() ~= nil)
+	end
 end
 
--- Follow dark mode by OBSERVING CastingBarFrame.Border's vertex color: cfFrames darkens it to ~0.25;
--- with no cfFrames it stays 1,1,1 and this is a no-op. ownBorder=true also tints the bar's own
--- Border/BorderShield (our built pet/party/nameplate bars). The player + target bars' borders are
--- darkened by cfFrames itself, so they pass false (icon only). Called from each bar's Show.
+-- Follow dark mode via cfDarkMode's public API (presence = on). ownBorder=true darkens the bar's own
+-- Border/BorderShield (our built pet/party/nameplate bars); the player + target bars' borders are darkened
+-- by cfDarkMode itself, so they pass false (icon only). Called from each bar's Show.
 function addon.FollowDarkMode(bar, ownBorder)
-	local r, g, b = CastingBarFrame.Border:GetVertexColor()
+	if not cfDarkMode then return end  -- no producer -> nothing to follow
 	if ownBorder then
-		-- The bar's own border DOES match the chrome darkness (observed r), unlike the icon border.
-		bar.Border:SetVertexColor(r, g, b)
-		if bar.BorderShield then bar.BorderShield:SetVertexColor(r, g, b) end
+		cfDarkMode.Darken(bar.Border)
+		if bar.BorderShield then cfDarkMode.Darken(bar.BorderShield) end
 	end
-	if r < 0.9 then StyleDarkIcon(bar) end  -- dark mode on (observed); icon border uses its own fixed darkness
+	StyleDarkIcon(bar)
 end
 
 -- Place a castbar's spell icon: ~1.6x bar height, just left of the bar, shield-aware rise. A no-arg call
