@@ -13,6 +13,7 @@ f:RegisterEvent("PLAYER_LOGIN")
 f:SetScript("OnEvent", function()
 	local bar = TargetFrameSpellBar
 	if not bar then return end
+	addon.WidenCastbarBorder(bar)  -- cover the template's left-edge fill overhang (set once)
 	bar.cffOnShield = addon.SetCastbarIcon  -- re-place the icon when SetShield swaps the border
 	hooksecurefunc(bar, "Show", function(self)
 		addon.ApplyIconVisuals(self)

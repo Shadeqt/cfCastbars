@@ -64,11 +64,25 @@ function addon.ApplyIconVisuals(bar)
 	bar.Icon:SetShown(bar.Icon:GetTexture() ~= nil)
 end
 
+-- The SmallCastingBar template's fill spills ~2px past the left edge of its border art. Nudge the
+-- border's (and shield's) TOPLEFT that far left so the art covers it. Runs once per bar.
+function addon.WidenCastbarBorder(bar)
+	for _, region in ipairs({ bar.Border, bar.BorderShield }) do
+		for i = 1, region:GetNumPoints() do
+			local point, relativeTo, relativePoint, x, y = region:GetPoint(i)
+			if point == "TOPLEFT" then
+				region:SetPoint(point, relativeTo, relativePoint, x - 2, y)
+			end
+		end
+	end
+end
+
 function addon.CreateCastbar(parent)
 	local bar = CreateFrame("StatusBar", nil, parent, "SmallCastingBarFrameTemplate")
 	bar:Hide()
 	-- No unit: built unit-agnostic; the driver binds it via addon.AttachBar (registers cast events).
 	CastingBarFrame_OnLoad(bar)
+	addon.WidenCastbarBorder(bar)  -- cover the template's left-edge fill overhang
 
 	-- Let SetShield re-place the icon when it swaps the border (icon Y differs per border).
 	bar.cffOnShield = addon.SetCastbarIcon
