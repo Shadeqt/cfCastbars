@@ -6,7 +6,7 @@ local function EnsureBar()
 	if not addon.petBar then
 		local bar = addon.CreateCastbar(PetFrame)
 		bar:SetScale(0.6)
-		bar:SetPoint("TOP", PetFrame, "BOTTOM", 5, 0)
+		bar:SetPoint("TOP", PetFrame, "BOTTOM", 5, -10)
 		bar.hp = PetFrameHealthBar
 		addon.petBar = bar
 	end
