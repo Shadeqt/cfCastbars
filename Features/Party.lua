@@ -19,11 +19,12 @@ local function EnsureRegularBar(i)
 end
 addon.EnsurePartyBar = EnsureRegularBar
 
--- Compact-frame party castbar: built once, centered on the frame, scaled to 0.6.
+-- Compact-frame party castbar: built once, centered on the frame, scaled to 0.8 (the compact frames
+-- are smaller, so the bar can run larger relative to them than on the regular party frames).
 local function EnsureCompactBar(unit, frame)
 	if not compactBars[unit] then
 		local bar = addon.CreateCastbar(frame)
-		bar:SetScale(0.6)
+		bar:SetScale(0.8)
 		bar:SetPoint("CENTER")
 		bar.hp = frame.healthBar
 		compactBars[unit] = bar
